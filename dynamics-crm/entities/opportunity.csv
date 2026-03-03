@@ -1,0 +1,14 @@
+logical_name,display_name,type,required
+opportunityid,Opportunity ID,guid,yes
+name,Topic,string,yes
+parentaccountid,Account,guid,no
+parentcontactid,Contact,guid,no
+estimatedvalue,Est. Revenue,decimal,no
+actualvalue,Actual Revenue,decimal,no
+estimatedclosedate,Est. Close Date,date,yes
+actualclosedate,Actual Close Date,date,no
+closeprobability,Probability,int,no
+stepname,Pipeline Phase,string,no
+salesstage,Sales Stage,picklist,no
+ownerid,Owner,guid,yes
+statecode,Status,picklist,yes

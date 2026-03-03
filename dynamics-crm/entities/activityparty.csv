@@ -1,0 +1,7 @@
+logical_name,display_name,type,required
+activitypartyid,Activity Party ID,guid,yes
+activityid,Activity,guid,yes
+partyid,Party,guid,no
+partyobjecttypecode,Party Type,string,no
+participationtypemask,Participation Type,picklist,yes
+addressused,Address,string,no

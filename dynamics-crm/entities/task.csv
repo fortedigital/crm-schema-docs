@@ -1,0 +1,7 @@
+logical_name,display_name,type,required
+activityid,Activity ID,guid,yes
+subject,Subject,string,yes
+description,Description,string,no
+percentcomplete,Percent Complete,int,no
+scheduledend,Due,datetime,no
+statecode,Status,picklist,yes

@@ -1,0 +1,14 @@
+logical_name,display_name,type,required
+leadid,Lead ID,guid,yes
+firstname,First Name,string,no
+lastname,Last Name,string,yes
+emailaddress1,Email,string,no
+telephone1,Phone,string,no
+companyname,Company,string,yes
+subject,Topic,string,yes
+leadqualitycode,Rating,picklist,no
+leadsourcecode,Lead Source,picklist,no
+estimatedvalue,Est. Revenue,decimal,no
+estimatedclosedate,Est. Close Date,date,no
+ownerid,Owner,guid,yes
+statecode,Status,picklist,yes

@@ -1,0 +1,9 @@
+logical_name,display_name,type,required
+activityid,Activity ID,guid,yes
+subject,Subject,string,yes
+description,Description,string,no
+location,Location,string,no
+scheduledstart,Start,datetime,yes
+scheduledend,End,datetime,yes
+isalldayevent,All Day Event,bool,no
+statecode,Status,picklist,yes

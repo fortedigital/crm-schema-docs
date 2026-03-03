@@ -1,0 +1,11 @@
+logical_name,display_name,type,required
+productid,Product ID,guid,yes
+name,Name,string,yes
+productnumber,Product Number,string,yes
+uomid,Unit,guid,yes
+uomscheduleid,Unit Group,guid,yes
+price,List Price,decimal,no
+standardcost,Standard Cost,decimal,no
+currentcost,Current Cost,decimal,no
+description,Description,string,no
+statecode,Status,picklist,yes

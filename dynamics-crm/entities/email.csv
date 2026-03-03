@@ -1,0 +1,8 @@
+logical_name,display_name,type,required
+activityid,Activity ID,guid,yes
+subject,Subject,string,no
+description,Body,string,no
+trackingtoken,Tracking Token,string,no
+senton,Sent On,datetime,no
+directioncode,Direction,bool,no
+statecode,Status,picklist,yes

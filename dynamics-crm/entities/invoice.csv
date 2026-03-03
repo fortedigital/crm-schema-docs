@@ -1,0 +1,13 @@
+logical_name,display_name,type,required
+invoiceid,Invoice ID,guid,yes
+name,Name,string,yes
+invoicenumber,Invoice Number,string,yes
+salesorderid,Order,guid,no
+accountid,Account,guid,no
+totallineitemamount,Total Detail Amount,decimal,no
+discountamount,Invoice Discount,decimal,no
+freightamount,Freight Amount,decimal,no
+totaltax,Total Tax,decimal,no
+totalamount,Total Amount,decimal,no
+duedate,Due Date,date,no
+statecode,Status,picklist,yes

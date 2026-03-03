@@ -1,0 +1,16 @@
+logical_name,display_name,type,required
+incidentid,Case ID,guid,yes
+title,Case Title,string,yes
+description,Description,string,no
+customerid,Customer,guid,yes
+customeridtype,Customer Type,string,yes
+primarycontactid,Contact,guid,no
+casetypecode,Case Type,picklist,no
+prioritycode,Priority,picklist,no
+caseorigincode,Origin,picklist,no
+productid,Product,guid,no
+subjectid,Subject,guid,no
+resolvedon,Resolved On,datetime,no
+ownerid,Owner,guid,yes
+statecode,Status,picklist,yes
+statuscode,Status Reason,picklist,yes

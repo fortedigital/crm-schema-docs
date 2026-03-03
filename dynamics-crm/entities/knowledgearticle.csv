@@ -1,0 +1,12 @@
+logical_name,display_name,type,required
+knowledgearticleid,Article ID,guid,yes
+title,Title,string,yes
+keywords,Keywords,string,no
+content,Content,string,no
+languagelocaleid,Language,int,yes
+articlepublicnumber,Article Number,int,no
+isprimary,Primary Translation,bool,no
+isinternal,Internal Only,bool,no
+subjectid,Subject,guid,no
+statecode,Status,picklist,yes
+statuscode,Status Reason,picklist,yes

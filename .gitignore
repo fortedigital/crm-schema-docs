@@ -1,0 +1,3 @@
+# Data extracted/transformed from CRM environments — never commit
+dynamics-crm/data/
+salesforce/data/

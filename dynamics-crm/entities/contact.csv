@@ -1,0 +1,14 @@
+logical_name,display_name,type,required
+contactid,Contact ID,guid,yes
+firstname,First Name,string,no
+lastname,Last Name,string,yes
+emailaddress1,Email,string,no
+telephone1,Phone,string,no
+mobilephone,Mobile Phone,string,no
+address1_line1,Street 1,string,no
+address1_city,City,string,no
+birthdate,Birthday,date,no
+gendercode,Gender,picklist,no
+parentcustomerid,Account,guid,no
+ownerid,Owner,guid,yes
+statecode,Status,picklist,yes

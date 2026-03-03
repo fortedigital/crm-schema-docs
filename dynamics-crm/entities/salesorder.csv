@@ -1,0 +1,13 @@
+logical_name,display_name,type,required
+salesorderid,Order ID,guid,yes
+name,Name,string,yes
+ordernumber,Order Number,string,yes
+quoteid,Quote,guid,no
+accountid,Account,guid,no
+totallineitemamount,Total Detail Amount,decimal,no
+discountamount,Order Discount,decimal,no
+freightamount,Freight Amount,decimal,no
+totaltax,Total Tax,decimal,no
+totalamount,Total Amount,decimal,no
+submitdate,Date Submitted,date,no
+statecode,Status,picklist,yes

@@ -1,0 +1,14 @@
+logical_name,display_name,type,required
+quoteid,Quote ID,guid,yes
+name,Name,string,yes
+quotenumber,Quote Number,string,yes
+opportunityid,Opportunity,guid,no
+accountid,Account,guid,no
+totallineitemamount,Total Detail Amount,decimal,no
+discountamount,Quote Discount,decimal,no
+freightamount,Freight Amount,decimal,no
+totaltax,Total Tax,decimal,no
+totalamount,Total Amount,decimal,no
+effectivefrom,Effective From,date,no
+effectiveto,Effective To,date,no
+statecode,Status,picklist,yes

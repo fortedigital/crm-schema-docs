@@ -1,0 +1,25 @@
+{
+  "environment": {
+    "url": "https://oras.crm4.dynamics.com",
+    "tenantId": "28f7c299-dac2-470f-8777-5c2d939ca7bd",
+    "authMode": "Interactive",
+    "clientId": "51f81489-12ee-4a9e-aaae-a2591f45987d"
+  },
+  "entitySource": {
+    "mode": "solution",
+    "solution": "OrasCRM",
+    "filter": ""
+  },
+  "diagrams": {
+    "core-entities":  ["account", "contact", "lead", "opportunity"],
+    "sales-process":  ["opportunity", "quote", "quotedetail", "salesorder", "salesorderdetail", "invoice", "invoicedetail", "product"],
+    "activities":     ["account", "contact", "activitypointer", "email", "phonecall", "task", "appointment", "activityparty"],
+    "service":        ["account", "contact", "activitypointer", "incident", "knowledgearticle", "subject"]
+  },
+  "output": {
+    "rawDir":      "../../data/raw",
+    "cleanDir":    "../../data/clean",
+    "diagramsDir": "../../diagrams",
+    "entitiesDir": "../../entities"
+  }
+}

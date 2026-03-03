@@ -1,0 +1,9 @@
+logical_name,display_name,type,required
+salesorderdetailid,Order Line ID,guid,yes
+salesorderid,Order,guid,yes
+productid,Product,guid,no
+productdescription,Description,string,no
+quantity,Quantity,decimal,yes
+priceperunit,Price Per Unit,decimal,no
+manualdiscountamount,Manual Discount,decimal,no
+extendedamount,Extended Amount,decimal,no

@@ -1,0 +1,8 @@
+logical_name,display_name,type,required
+activityid,Activity ID,guid,yes
+subject,Subject,string,yes
+description,Description,string,no
+phonenumber,Phone Number,string,no
+directioncode,Direction,bool,no
+scheduledend,Due,datetime,no
+statecode,Status,picklist,yes

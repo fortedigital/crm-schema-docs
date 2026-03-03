@@ -1,0 +1,13 @@
+logical_name,display_name,type,required
+activityid,Activity ID,guid,yes
+subject,Subject,string,yes
+activitytypecode,Activity Type,picklist,yes
+regardingobjectid,Regarding,guid,no
+regardingobjecttype,Regarding Type,string,no
+ownerid,Owner,guid,yes
+scheduledstart,Start,datetime,no
+scheduledend,Due,datetime,no
+actualstart,Actual Start,datetime,no
+actualend,Actual End,datetime,no
+statecode,Status,picklist,yes
+statuscode,Status Reason,picklist,yes

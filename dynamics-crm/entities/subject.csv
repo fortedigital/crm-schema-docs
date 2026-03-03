@@ -1,0 +1,5 @@
+logical_name,display_name,type,required
+subjectid,Subject ID,guid,yes
+title,Title,string,yes
+description,Description,string,no
+parentsubject,Parent Subject,guid,no
