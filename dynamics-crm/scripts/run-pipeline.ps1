@@ -6,15 +6,12 @@
     Executes the three stages in order:
       1. Gather   — pull metadata from Dataverse (requires auth)
       2. Clean    — transform raw data into normalised JSON
-      3. Generate — write diagrams/*.mmd, entities/*.csv, and *.docx
+      3. Generate — write diagrams/*.mmd, entities/*.csv, and *.md
 
     Any stage can be skipped with the corresponding -Skip* switch.
 
 .PARAMETER ConfigPath
     Path to config.json. Defaults to gather/config.json.
-
-.PARAMETER SelectEnvironment
-    Pass through to run-gather.ps1: launch pac CLI environment picker before gathering.
 
 .PARAMETER SkipGather
     Skip the gather stage (use existing data/raw/ files).
@@ -26,8 +23,8 @@
     Skip the generate stage.
 
 .EXAMPLE
-    # Full pipeline, first run
-    .\run-pipeline.ps1 -SelectEnvironment
+    # Full pipeline
+    .\run-pipeline.ps1
 
 .EXAMPLE
     # Re-run clean + generate only (raw data already present)
@@ -41,8 +38,7 @@
 #Requires -Version 7.0
 [CmdletBinding()]
 param(
-    [string]$ConfigPath         = "$PSScriptRoot/gather/config.json",
-    [switch]$SelectEnvironment,
+    [string]$ConfigPath   = "$PSScriptRoot/gather/config.json",
     [switch]$SkipGather,
     [switch]$SkipClean,
     [switch]$SkipGenerate
@@ -71,8 +67,7 @@ function Invoke-Stage($label, $scriptPath, $extraArgs = @()) {
 
 # ── 1. Gather ─────────────────────────────────────────────────────────────────
 if (-not $SkipGather) {
-    $gatherArgs = if ($SelectEnvironment) { @('-SelectEnvironment') } else { @() }
-    Invoke-Stage 'Gather' "$PSScriptRoot/gather/run-gather.ps1" $gatherArgs
+    Invoke-Stage 'Gather' "$PSScriptRoot/gather/run-gather.ps1"
 } else {
     Write-Host "Gather — skipped`n" -ForegroundColor DarkGray
 }

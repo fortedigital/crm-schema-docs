@@ -3,32 +3,22 @@
     Orchestrates the full data-gathering phase for Dynamics 365 entity metadata.
 
 .DESCRIPTION
-    1. (Optional) Use pac CLI to pick an environment and update config.json.
-    2. Authenticate once via Dataverse OAuth2.
-    3. Run get-entities, get-attributes, and get-relationships in sequence.
+    1. Authenticate once via Dataverse OAuth2.
+    2. Run get-entities, get-attributes, get-relationships, and get-view-usage in sequence.
        The auth token is passed to child processes via environment variables
        so each step re-uses the same token without re-authenticating.
 
 .PARAMETER ConfigPath
     Path to config.json. Defaults to the config.json next to this script.
 
-.PARAMETER SelectEnvironment
-    If set, launch the interactive environment picker before gathering.
-
 .EXAMPLE
-    # First run — pick environment interactively, then gather
-    .\run-gather.ps1 -SelectEnvironment
-
-.EXAMPLE
-    # Subsequent runs — environment already in config.json
     .\run-gather.ps1
 #>
 
 #Requires -Version 7.0
 [CmdletBinding()]
 param(
-    [string]$ConfigPath      = "$PSScriptRoot/config.json",
-    [switch]$SelectEnvironment
+    [string]$ConfigPath = "$PSScriptRoot/config.json"
 )
 
 . "$PSScriptRoot/connect.ps1"
@@ -36,12 +26,7 @@ param(
 $start = Get-Date
 Write-Host "=== Dynamics 365 data gather — $(Get-Date -Format 'yyyy-MM-dd HH:mm') ===" -ForegroundColor Cyan
 
-# ── 1. Environment selection ──────────────────────────────────────────────────
-if ($SelectEnvironment) {
-    Select-DataverseEnvironment -ConfigPath $ConfigPath
-}
-
-# ── 2. Authenticate once ──────────────────────────────────────────────────────
+# ── 1. Authenticate once ──────────────────────────────────────────────────────
 Connect-Dataverse -ConfigPath $ConfigPath
 # $env:DATAVERSE_TOKEN and $env:DATAVERSE_URL are now set for child processes
 

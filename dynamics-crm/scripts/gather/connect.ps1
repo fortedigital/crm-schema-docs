@@ -3,8 +3,7 @@
     Dataverse authentication and HTTP helpers.
 
 .DESCRIPTION
-    Dot-source this file to gain Connect-Dataverse, Select-DataverseEnvironment,
-    and Invoke-DataverseGet.
+    Dot-source this file to gain Connect-Dataverse and Invoke-DataverseGet.
 
     Auth modes
     ----------
@@ -28,57 +27,6 @@
 
 # ── Module-level state ────────────────────────────────────────────────────────
 $script:Connection = $null
-
-# ── Public: environment picker using pac CLI ──────────────────────────────────
-function Select-DataverseEnvironment {
-    <#
-    .SYNOPSIS Lists environments via the Power Platform CLI and updates config.json.
-    #>
-    param(
-        [string]$ConfigPath = "$PSScriptRoot/config.json"
-    )
-
-    if (-not (Get-Command pac -ErrorAction SilentlyContinue)) {
-        Write-Warning "pac CLI not found. Install using: dotnet tool install --global Microsoft.PowerApps.CLI.Tool"
-        Write-Warning "Skipping environment selection — set environment.url in config.json manually."
-        return
-    }
-
-    Write-Host "Fetching environments from Power Platform CLI..." -ForegroundColor Cyan
-    $raw = pac env list --json 2>$null
-    if (-not $raw) {
-        Write-Warning "pac returned no environments. Run 'pac auth create' first."
-        return
-    }
-
-    $envs = $raw | ConvertFrom-Json
-    if ($envs.Count -eq 0) {
-        Write-Warning "No environments found. Run 'pac auth create' first."
-        return
-    }
-
-    Write-Host ""
-    for ($i = 0; $i -lt $envs.Count; $i++) {
-        $e = $envs[$i]
-        $url  = $e.url       ?? $e.EnvironmentUrl ?? $e.envUrl ?? "(unknown url)"
-        $name = $e.displayName ?? $e.DisplayName   ?? $e.name  ?? "(unknown name)"
-        Write-Host "  [$i] $name"
-        Write-Host "      $url" -ForegroundColor DarkGray
-    }
-    Write-Host ""
-
-    [int]$idx = Read-Host "Select environment (0-$($envs.Count - 1))"
-    $selected = $envs[$idx]
-    $selectedUrl = ($selected.url ?? $selected.EnvironmentUrl ?? $selected.envUrl).TrimEnd('/')
-
-    $config = Get-Content $ConfigPath -Raw | ConvertFrom-Json
-    $config.environment.url = $selectedUrl
-    $config | ConvertTo-Json -Depth 5 | Set-Content $ConfigPath -Encoding UTF8
-
-    $selectedName = $selected.displayName ?? $selected.DisplayName ?? $selected.name
-    Write-Host "Config updated → $selectedName ($selectedUrl)" -ForegroundColor Green
-    return $selectedUrl
-}
 
 # ── Public: authenticate and populate $script:Connection ─────────────────────
 function Connect-Dataverse {
