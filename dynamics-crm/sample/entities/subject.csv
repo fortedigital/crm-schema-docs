@@ -1,5 +1,5 @@
-logical_name,display_name,type,required
-subjectid,Subject ID,guid,yes
-title,Title,string,yes
-description,Description,string,no
-parentsubject,Parent Subject,guid,no
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+subjectid,Subject ID,guid,yes,no,4,,
+title,Title,string,yes,no,4,,
+description,Description,string,no,no,2,,
+parentsubjectid,Parent Subject,guid,no,no,2,,

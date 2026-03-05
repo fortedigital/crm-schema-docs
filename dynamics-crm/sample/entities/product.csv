@@ -1,11 +1,12 @@
-logical_name,display_name,type,required
-productid,Product ID,guid,yes
-name,Name,string,yes
-productnumber,Product Number,string,yes
-uomid,Unit,guid,yes
-uomscheduleid,Unit Group,guid,yes
-price,List Price,decimal,no
-standardcost,Standard Cost,decimal,no
-currentcost,Current Cost,decimal,no
-description,Description,string,no
-statecode,Status,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+productid,Product ID,guid,yes,no,8,,
+name,Name,string,yes,no,8,,
+productnumber,Product Number,string,yes,no,7,,
+uomid,Unit,guid,yes,no,5,,
+uomscheduleid,Unit Group,guid,yes,no,4,,
+pricelevelid,Default Price List,guid,no,no,3,,
+price,List Price,decimal,no,no,6,,
+standardcost,Standard Cost,decimal,no,no,3,,
+currentcost,Current Cost,decimal,no,no,3,,
+description,Description,string,no,no,4,,
+statecode,Status,picklist,yes,no,8,,

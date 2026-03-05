@@ -1,12 +1,12 @@
-logical_name,display_name,type,required
-knowledgearticleid,Article ID,guid,yes
-title,Title,string,yes
-keywords,Keywords,string,no
-content,Content,string,no
-languagelocaleid,Language,int,yes
-articlepublicnumber,Article Number,int,no
-isprimary,Primary Translation,bool,no
-isinternal,Internal Only,bool,no
-subjectid,Subject,guid,no
-statecode,Status,picklist,yes
-statuscode,Status Reason,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+knowledgearticleid,Article ID,guid,yes,no,5,,
+title,Title,string,yes,no,5,,
+keywords,Keywords,string,no,no,3,,
+content,Content,string,no,no,4,,
+languagelocaleid,Language,int,yes,no,4,,
+articlepublicnumber,Article Number,string,no,no,4,,
+isprimary,Primary Translation,bool,no,no,2,,
+isinternal,Internal Only,bool,no,no,3,,
+subjectid,Subject,guid,no,no,3,,
+statecode,Status,picklist,yes,no,5,,
+statuscode,Status Reason,picklist,yes,no,5,,

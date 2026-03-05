@@ -1,16 +1,16 @@
-logical_name,display_name,type,required
-incidentid,Case ID,guid,yes
-title,Case Title,string,yes
-description,Description,string,no
-customerid,Customer,guid,yes
-customeridtype,Customer Type,string,yes
-primarycontactid,Contact,guid,no
-casetypecode,Case Type,picklist,no
-prioritycode,Priority,picklist,no
-caseorigincode,Origin,picklist,no
-productid,Product,guid,no
-subjectid,Subject,guid,no
-resolvedon,Resolved On,datetime,no
-ownerid,Owner,guid,yes
-statecode,Status,picklist,yes
-statuscode,Status Reason,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+incidentid,Case ID,guid,yes,no,8,,
+title,Case Title,string,yes,no,8,,
+description,Description,string,no,no,5,,
+customerid,Customer,guid,yes,no,8,,
+customeridtype,Customer Type,string,yes,no,6,,
+primarycontactid,Contact,guid,no,no,6,,
+casetypecode,Case Type,picklist,no,no,5,,
+prioritycode,Priority,picklist,no,no,7,,
+caseorigincode,Origin,picklist,no,no,5,,
+productid,Product,guid,no,no,4,,
+subjectid,Subject,guid,no,no,4,,
+resolvedon,Resolved On,datetime,no,no,4,,
+ownerid,Owner,guid,yes,no,8,,
+statecode,Status,picklist,yes,no,8,,
+statuscode,Status Reason,picklist,yes,no,7,,

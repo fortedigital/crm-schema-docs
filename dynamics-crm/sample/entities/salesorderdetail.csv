@@ -1,9 +1,9 @@
-logical_name,display_name,type,required
-salesorderdetailid,Order Line ID,guid,yes
-salesorderid,Order,guid,yes
-productid,Product,guid,no
-productdescription,Description,string,no
-quantity,Quantity,decimal,yes
-priceperunit,Price Per Unit,decimal,no
-manualdiscountamount,Manual Discount,decimal,no
-extendedamount,Extended Amount,decimal,no
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+salesorderdetailid,Order Line ID,guid,yes,no,5,,
+salesorderid,Order,guid,yes,no,5,,
+productid,Product,guid,no,no,5,,
+productdescription,Description,string,no,no,4,,
+quantity,Quantity,decimal,yes,no,5,,
+priceperunit,Price Per Unit,decimal,no,no,5,,
+manualdiscountamount,Manual Discount,decimal,no,no,2,,
+extendedamount,Extended Amount,decimal,no,no,5,,

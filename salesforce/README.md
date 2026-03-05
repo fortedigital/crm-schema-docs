@@ -2,6 +2,12 @@
 
 ER diagrams and field reference for a Salesforce org (Sales Cloud / Service Cloud).
 
+## Sample output
+
+The [`sample/`](./sample/) directory contains placeholder output representing a standard Salesforce Sales Cloud and Service Cloud org. It illustrates the pipeline output format but is **not** an export from any real environment.
+
+Run the pipeline against your own Salesforce org to generate actual output in `diagrams/`, `objects/`, and `salesforce-object-reference.md`.
+
 ## Pipeline
 
 ```

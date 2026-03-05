@@ -1,13 +1,14 @@
-logical_name,display_name,type,required
-invoiceid,Invoice ID,guid,yes
-name,Name,string,yes
-invoicenumber,Invoice Number,string,yes
-salesorderid,Order,guid,no
-accountid,Account,guid,no
-totallineitemamount,Total Detail Amount,decimal,no
-discountamount,Invoice Discount,decimal,no
-freightamount,Freight Amount,decimal,no
-totaltax,Total Tax,decimal,no
-totalamount,Total Amount,decimal,no
-duedate,Due Date,date,no
-statecode,Status,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+invoiceid,Invoice ID,guid,yes,no,8,,
+name,Name,string,yes,no,8,,
+invoicenumber,Invoice Number,string,yes,no,8,,
+salesorderid,Order,guid,no,no,5,,
+accountid,Account,guid,no,no,7,,
+totallineitemamount,Total Detail Amount,decimal,no,no,4,,
+discountamount,Invoice Discount,decimal,no,no,3,,
+freightamount,Freight Amount,decimal,no,no,2,,
+totaltax,Total Tax,decimal,no,no,3,,
+totalamount,Total Amount,decimal,no,no,7,,
+duedate,Due Date,date,no,no,6,,
+ownerid,Owner,guid,yes,no,8,,
+statecode,Status,picklist,yes,no,8,,

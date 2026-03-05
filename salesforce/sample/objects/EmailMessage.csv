@@ -1,0 +1,10 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Email Message ID,id,yes,no,4,,
+ParentId,Parent,reference,no,no,4,,
+Subject,Subject,string,no,no,4,,
+FromAddress,From Address,email,no,no,4,,
+ToAddress,To Address,string,no,no,4,,
+TextBody,Text Body,textarea,no,no,3,,
+HtmlBody,HTML Body,textarea,no,no,3,,
+MessageDate,Message Date,datetime,no,no,4,,
+Incoming,Incoming,boolean,no,no,3,,

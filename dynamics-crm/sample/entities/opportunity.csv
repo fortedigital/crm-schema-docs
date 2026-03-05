@@ -1,14 +1,15 @@
-logical_name,display_name,type,required
-opportunityid,Opportunity ID,guid,yes
-name,Topic,string,yes
-parentaccountid,Account,guid,no
-parentcontactid,Contact,guid,no
-estimatedvalue,Est. Revenue,decimal,no
-actualvalue,Actual Revenue,decimal,no
-estimatedclosedate,Est. Close Date,date,yes
-actualclosedate,Actual Close Date,date,no
-closeprobability,Probability,int,no
-stepname,Pipeline Phase,string,no
-salesstage,Sales Stage,picklist,no
-ownerid,Owner,guid,yes
-statecode,Status,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+opportunityid,Opportunity ID,guid,yes,no,10,,
+name,Topic,string,yes,no,10,,
+parentaccountid,Account,guid,no,no,9,,
+parentcontactid,Contact,guid,no,no,5,,
+estimatedvalue,Est. Revenue,decimal,no,no,8,,
+actualvalue,Actual Revenue,decimal,no,no,4,,
+estimatedclosedate,Est. Close Date,date,yes,no,10,,
+actualclosedate,Actual Close Date,date,no,no,3,,
+closeprobability,Probability,int,no,no,6,,
+stepname,Pipeline Phase,string,no,no,5,,
+salesstage,Sales Stage,picklist,no,no,8,,
+pricelevelid,Price List,guid,no,no,3,,
+ownerid,Owner,guid,yes,no,10,,
+statecode,Status,picklist,yes,no,10,,

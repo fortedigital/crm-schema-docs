@@ -1,0 +1,11 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Knowledge Article ID,id,yes,no,4,,
+Title,Title,string,yes,no,4,,
+Summary,Summary,textarea,no,no,3,,
+ArticleNumber,Article Number,autonumber,yes,no,4,,
+LastPublishedDate,Last Published,datetime,no,no,3,,
+PublishStatus,Publish Status,picklist,yes,no,4,,
+Language,Language,picklist,yes,no,4,,
+IsVisibleInApp,Visible in App,boolean,no,no,2,,
+IsVisibleInCsp,Visible in Customer Portal,boolean,no,no,2,,
+OwnerId,Owner,reference,yes,no,4,,

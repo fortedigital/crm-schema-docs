@@ -1,13 +1,13 @@
-logical_name,display_name,type,required
-activityid,Activity ID,guid,yes
-subject,Subject,string,yes
-activitytypecode,Activity Type,picklist,yes
-regardingobjectid,Regarding,guid,no
-regardingobjecttype,Regarding Type,string,no
-ownerid,Owner,guid,yes
-scheduledstart,Start,datetime,no
-scheduledend,Due,datetime,no
-actualstart,Actual Start,datetime,no
-actualend,Actual End,datetime,no
-statecode,Status,picklist,yes
-statuscode,Status Reason,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+activityid,Activity ID,guid,yes,no,8,,
+subject,Subject,string,yes,no,8,,
+activitytypecode,Activity Type,picklist,yes,no,8,,
+regardingobjectid,Regarding,guid,no,no,7,,
+regardingobjecttype,Regarding Type,string,no,no,5,,
+ownerid,Owner,guid,yes,no,8,,
+scheduledstart,Start,datetime,no,no,5,,
+scheduledend,Due,datetime,no,no,6,,
+actualstart,Actual Start,datetime,no,no,3,,
+actualend,Actual End,datetime,no,no,3,,
+statecode,Status,picklist,yes,no,8,,
+statuscode,Status Reason,picklist,yes,no,7,,

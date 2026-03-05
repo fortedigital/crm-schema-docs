@@ -1,0 +1,13 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Event ID,id,yes,no,5,,
+Subject,Subject,string,no,no,5,,
+WhoId,Name (Who),reference,no,no,4,,
+WhatId,Related To (What),reference,no,no,4,,
+StartDateTime,Start,datetime,yes,no,5,,
+EndDateTime,End,datetime,yes,no,5,,
+ActivityDate,Date,date,no,no,5,,
+DurationInMinutes,Duration,integer,no,no,4,,
+Location,Location,string,no,no,3,,
+Description,Description,textarea,no,no,3,,
+IsAllDayEvent,All Day,boolean,no,no,4,,
+OwnerId,Owner,reference,yes,no,5,,

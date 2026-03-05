@@ -1,0 +1,11 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Quote Line Item ID,id,yes,no,4,,
+QuoteId,Quote,reference,yes,no,4,,
+PricebookEntryId,Price Book Entry,reference,yes,no,4,,
+Product2Id,Product,reference,no,no,4,,
+Quantity,Quantity,double,yes,no,4,,
+UnitPrice,Sales Price,currency,no,no,4,,
+TotalPrice,Total Price,currency,no,no,4,,
+Discount,Discount,double,no,no,2,,
+Description,Description,textarea,no,no,2,,
+ServiceDate,Date,date,no,no,2,,

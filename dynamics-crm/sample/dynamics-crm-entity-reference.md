@@ -1,26 +1,29 @@
-# Dynamics 365 CRM — Entity Reference
+# Dynamics 365 CRM — Entity Reference (Sample)
 
-_Generated: 2026-03-03 13:42_
+> **Sample data only.** Generated against a standard Dynamics 365 Sales and Service demo environment.
+> Run the pipeline against your own Dataverse environment to produce real output.
+
+_Generated: 2026-03-05_
 
 ---
 
 ## Diagrams
 
-### Dynamics 365 — Activities
-
-_Diagram image not available._
-
 ### Dynamics 365 — Core Entities
 
-_Diagram image not available._
+_Diagram image not available — run the generate stage to render PNGs._
 
 ### Dynamics 365 — Sales Process
 
-_Diagram image not available._
+_Diagram image not available — run the generate stage to render PNGs._
+
+### Dynamics 365 — Activities
+
+_Diagram image not available — run the generate stage to render PNGs._
 
 ### Dynamics 365 — Service
 
-_Diagram image not available._
+_Diagram image not available — run the generate stage to render PNGs._
 
 ---
 
@@ -28,300 +31,309 @@ _Diagram image not available._
 
 ### account
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| accountid | Account ID | guid | yes |
-| name | Account Name | string | yes |
-| emailaddress1 | Email | string | no |
-| telephone1 | Phone | string | no |
-| websiteurl | Website | string | no |
-| address1_line1 | Street 1 | string | no |
-| address1_city | City | string | no |
-| address1_country | Country | string | no |
-| industrycode | Industry | picklist | no |
-| revenue | Annual Revenue | decimal | no |
-| numberofemployees | Number of Employees | int | no |
-| ownerid | Owner | guid | yes |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| accountid | Account ID | guid | yes | no | 10 |
+| name | Account Name | string | yes | no | 12 |
+| emailaddress1 | Email | string | no | no | 6 |
+| telephone1 | Phone | string | no | no | 8 |
+| websiteurl | Website | string | no | no | 3 |
+| address1_line1 | Street 1 | string | no | no | 5 |
+| address1_city | City | string | no | no | 5 |
+| address1_country | Country | string | no | no | 5 |
+| industrycode | Industry | picklist | no | no | 4 |
+| revenue | Annual Revenue | decimal | no | no | 3 |
+| numberofemployees | Number of Employees | int | no | no | 2 |
+| parentaccountid | Parent Account | guid | no | no | 2 |
+| primarycontactid | Primary Contact | guid | no | no | 4 |
+| ownerid | Owner | guid | yes | no | 10 |
+| statecode | Status | picklist | yes | no | 10 |
 
 ### contact
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| contactid | Contact ID | guid | yes |
-| firstname | First Name | string | no |
-| lastname | Last Name | string | yes |
-| emailaddress1 | Email | string | no |
-| telephone1 | Phone | string | no |
-| mobilephone | Mobile Phone | string | no |
-| address1_line1 | Street 1 | string | no |
-| address1_city | City | string | no |
-| birthdate | Birthday | date | no |
-| gendercode | Gender | picklist | no |
-| parentcustomerid | Account | guid | no |
-| ownerid | Owner | guid | yes |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| contactid | Contact ID | guid | yes | no | 10 |
+| firstname | First Name | string | no | no | 8 |
+| lastname | Last Name | string | yes | no | 10 |
+| emailaddress1 | Email | string | no | no | 9 |
+| telephone1 | Phone | string | no | no | 7 |
+| mobilephone | Mobile Phone | string | no | no | 5 |
+| jobtitle | Job Title | string | no | no | 6 |
+| department | Department | string | no | no | 4 |
+| address1_line1 | Street 1 | string | no | no | 4 |
+| address1_city | City | string | no | no | 4 |
+| birthdate | Birthday | date | no | no | 1 |
+| gendercode | Gender | picklist | no | no | 1 |
+| parentcustomerid | Account | guid | no | no | 9 |
+| ownerid | Owner | guid | yes | no | 10 |
+| statecode | Status | picklist | yes | no | 10 |
 
 ### lead
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| leadid | Lead ID | guid | yes |
-| firstname | First Name | string | no |
-| lastname | Last Name | string | yes |
-| emailaddress1 | Email | string | no |
-| telephone1 | Phone | string | no |
-| companyname | Company | string | yes |
-| subject | Topic | string | yes |
-| leadqualitycode | Rating | picklist | no |
-| leadsourcecode | Lead Source | picklist | no |
-| estimatedvalue | Est. Revenue | decimal | no |
-| estimatedclosedate | Est. Close Date | date | no |
-| ownerid | Owner | guid | yes |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| leadid | Lead ID | guid | yes | no | 8 |
+| firstname | First Name | string | no | no | 6 |
+| lastname | Last Name | string | yes | no | 8 |
+| emailaddress1 | Email | string | no | no | 7 |
+| telephone1 | Phone | string | no | no | 5 |
+| companyname | Company | string | yes | no | 8 |
+| subject | Topic | string | yes | no | 8 |
+| leadqualitycode | Rating | picklist | no | no | 4 |
+| leadsourcecode | Lead Source | picklist | no | no | 5 |
+| estimatedvalue | Est. Revenue | decimal | no | no | 2 |
+| estimatedclosedate | Est. Close Date | date | no | no | 2 |
+| ownerid | Owner | guid | yes | no | 8 |
+| statecode | Status | picklist | yes | no | 8 |
 
 ### opportunity
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| opportunityid | Opportunity ID | guid | yes |
-| name | Topic | string | yes |
-| parentaccountid | Account | guid | no |
-| parentcontactid | Contact | guid | no |
-| estimatedvalue | Est. Revenue | decimal | no |
-| actualvalue | Actual Revenue | decimal | no |
-| estimatedclosedate | Est. Close Date | date | yes |
-| actualclosedate | Actual Close Date | date | no |
-| closeprobability | Probability | int | no |
-| stepname | Pipeline Phase | string | no |
-| salesstage | Sales Stage | picklist | no |
-| ownerid | Owner | guid | yes |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| opportunityid | Opportunity ID | guid | yes | no | 10 |
+| name | Topic | string | yes | no | 10 |
+| parentaccountid | Account | guid | no | no | 9 |
+| parentcontactid | Contact | guid | no | no | 5 |
+| estimatedvalue | Est. Revenue | decimal | no | no | 8 |
+| actualvalue | Actual Revenue | decimal | no | no | 4 |
+| estimatedclosedate | Est. Close Date | date | yes | no | 10 |
+| actualclosedate | Actual Close Date | date | no | no | 3 |
+| closeprobability | Probability | int | no | no | 6 |
+| stepname | Pipeline Phase | string | no | no | 5 |
+| salesstage | Sales Stage | picklist | no | no | 8 |
+| pricelevelid | Price List | guid | no | no | 3 |
+| ownerid | Owner | guid | yes | no | 10 |
+| statecode | Status | picklist | yes | no | 10 |
 
 ### quote
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| quoteid | Quote ID | guid | yes |
-| name | Name | string | yes |
-| quotenumber | Quote Number | string | yes |
-| opportunityid | Opportunity | guid | no |
-| accountid | Account | guid | no |
-| totallineitemamount | Total Detail Amount | decimal | no |
-| discountamount | Quote Discount | decimal | no |
-| freightamount | Freight Amount | decimal | no |
-| totaltax | Total Tax | decimal | no |
-| totalamount | Total Amount | decimal | no |
-| effectivefrom | Effective From | date | no |
-| effectiveto | Effective To | date | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| quoteid | Quote ID | guid | yes | no | 8 |
+| name | Name | string | yes | no | 8 |
+| quotenumber | Quote Number | string | yes | no | 8 |
+| opportunityid | Opportunity | guid | no | no | 7 |
+| accountid | Account | guid | no | no | 7 |
+| totallineitemamount | Total Detail Amount | decimal | no | no | 5 |
+| discountamount | Quote Discount | decimal | no | no | 3 |
+| freightamount | Freight Amount | decimal | no | no | 2 |
+| totaltax | Total Tax | decimal | no | no | 3 |
+| totalamount | Total Amount | decimal | no | no | 7 |
+| effectivefrom | Effective From | date | no | no | 4 |
+| effectiveto | Effective To | date | no | no | 4 |
+| ownerid | Owner | guid | yes | no | 8 |
+| statecode | Status | picklist | yes | no | 8 |
 
 ### quotedetail
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| quotedetailid | Quote Line ID | guid | yes |
-| quoteid | Quote | guid | yes |
-| productid | Product | guid | no |
-| productdescription | Description | string | no |
-| quantity | Quantity | decimal | yes |
-| priceperunit | Price Per Unit | decimal | no |
-| manualdiscountamount | Manual Discount | decimal | no |
-| extendedamount | Extended Amount | decimal | no |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| quotedetailid | Quote Line ID | guid | yes | no | 5 |
+| quoteid | Quote | guid | yes | no | 5 |
+| productid | Product | guid | no | no | 5 |
+| productdescription | Description | string | no | no | 4 |
+| quantity | Quantity | decimal | yes | no | 5 |
+| priceperunit | Price Per Unit | decimal | no | no | 5 |
+| manualdiscountamount | Manual Discount | decimal | no | no | 2 |
+| extendedamount | Extended Amount | decimal | no | no | 5 |
 
 ### salesorder
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| salesorderid | Order ID | guid | yes |
-| name | Name | string | yes |
-| ordernumber | Order Number | string | yes |
-| quoteid | Quote | guid | no |
-| accountid | Account | guid | no |
-| totallineitemamount | Total Detail Amount | decimal | no |
-| discountamount | Order Discount | decimal | no |
-| freightamount | Freight Amount | decimal | no |
-| totaltax | Total Tax | decimal | no |
-| totalamount | Total Amount | decimal | no |
-| submitdate | Date Submitted | date | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| salesorderid | Order ID | guid | yes | no | 8 |
+| name | Name | string | yes | no | 8 |
+| ordernumber | Order Number | string | yes | no | 8 |
+| quoteid | Quote | guid | no | no | 5 |
+| accountid | Account | guid | no | no | 7 |
+| totallineitemamount | Total Detail Amount | decimal | no | no | 4 |
+| discountamount | Order Discount | decimal | no | no | 3 |
+| freightamount | Freight Amount | decimal | no | no | 2 |
+| totaltax | Total Tax | decimal | no | no | 3 |
+| totalamount | Total Amount | decimal | no | no | 7 |
+| submitdate | Date Submitted | date | no | no | 5 |
+| fulfilledon | Date Fulfilled | date | no | no | 3 |
+| ownerid | Owner | guid | yes | no | 8 |
+| statecode | Status | picklist | yes | no | 8 |
 
 ### salesorderdetail
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| salesorderdetailid | Order Line ID | guid | yes |
-| salesorderid | Order | guid | yes |
-| productid | Product | guid | no |
-| productdescription | Description | string | no |
-| quantity | Quantity | decimal | yes |
-| priceperunit | Price Per Unit | decimal | no |
-| manualdiscountamount | Manual Discount | decimal | no |
-| extendedamount | Extended Amount | decimal | no |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| salesorderdetailid | Order Line ID | guid | yes | no | 5 |
+| salesorderid | Order | guid | yes | no | 5 |
+| productid | Product | guid | no | no | 5 |
+| productdescription | Description | string | no | no | 4 |
+| quantity | Quantity | decimal | yes | no | 5 |
+| priceperunit | Price Per Unit | decimal | no | no | 5 |
+| manualdiscountamount | Manual Discount | decimal | no | no | 2 |
+| extendedamount | Extended Amount | decimal | no | no | 5 |
 
 ### invoice
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| invoiceid | Invoice ID | guid | yes |
-| name | Name | string | yes |
-| invoicenumber | Invoice Number | string | yes |
-| salesorderid | Order | guid | no |
-| accountid | Account | guid | no |
-| totallineitemamount | Total Detail Amount | decimal | no |
-| discountamount | Invoice Discount | decimal | no |
-| freightamount | Freight Amount | decimal | no |
-| totaltax | Total Tax | decimal | no |
-| totalamount | Total Amount | decimal | no |
-| duedate | Due Date | date | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| invoiceid | Invoice ID | guid | yes | no | 8 |
+| name | Name | string | yes | no | 8 |
+| invoicenumber | Invoice Number | string | yes | no | 8 |
+| salesorderid | Order | guid | no | no | 5 |
+| accountid | Account | guid | no | no | 7 |
+| totallineitemamount | Total Detail Amount | decimal | no | no | 4 |
+| discountamount | Invoice Discount | decimal | no | no | 3 |
+| freightamount | Freight Amount | decimal | no | no | 2 |
+| totaltax | Total Tax | decimal | no | no | 3 |
+| totalamount | Total Amount | decimal | no | no | 7 |
+| duedate | Due Date | date | no | no | 6 |
+| ownerid | Owner | guid | yes | no | 8 |
+| statecode | Status | picklist | yes | no | 8 |
 
 ### invoicedetail
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| invoicedetailid | Invoice Line ID | guid | yes |
-| invoiceid | Invoice | guid | yes |
-| productid | Product | guid | no |
-| productdescription | Description | string | no |
-| quantity | Quantity | decimal | yes |
-| priceperunit | Price Per Unit | decimal | no |
-| manualdiscountamount | Manual Discount | decimal | no |
-| extendedamount | Extended Amount | decimal | no |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| invoicedetailid | Invoice Line ID | guid | yes | no | 5 |
+| invoiceid | Invoice | guid | yes | no | 5 |
+| productid | Product | guid | no | no | 5 |
+| productdescription | Description | string | no | no | 4 |
+| quantity | Quantity | decimal | yes | no | 5 |
+| priceperunit | Price Per Unit | decimal | no | no | 5 |
+| manualdiscountamount | Manual Discount | decimal | no | no | 2 |
+| extendedamount | Extended Amount | decimal | no | no | 5 |
 
 ### product
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| productid | Product ID | guid | yes |
-| name | Name | string | yes |
-| productnumber | Product Number | string | yes |
-| uomid | Unit | guid | yes |
-| uomscheduleid | Unit Group | guid | yes |
-| price | List Price | decimal | no |
-| standardcost | Standard Cost | decimal | no |
-| currentcost | Current Cost | decimal | no |
-| description | Description | string | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| productid | Product ID | guid | yes | no | 8 |
+| name | Name | string | yes | no | 8 |
+| productnumber | Product Number | string | yes | no | 7 |
+| uomid | Unit | guid | yes | no | 5 |
+| uomscheduleid | Unit Group | guid | yes | no | 4 |
+| pricelevelid | Default Price List | guid | no | no | 3 |
+| price | List Price | decimal | no | no | 6 |
+| standardcost | Standard Cost | decimal | no | no | 3 |
+| currentcost | Current Cost | decimal | no | no | 3 |
+| description | Description | string | no | no | 4 |
+| statecode | Status | picklist | yes | no | 8 |
 
 ### activitypointer
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| activityid | Activity ID | guid | yes |
-| subject | Subject | string | yes |
-| activitytypecode | Activity Type | picklist | yes |
-| regardingobjectid | Regarding | guid | no |
-| regardingobjecttype | Regarding Type | string | no |
-| ownerid | Owner | guid | yes |
-| scheduledstart | Start | datetime | no |
-| scheduledend | Due | datetime | no |
-| actualstart | Actual Start | datetime | no |
-| actualend | Actual End | datetime | no |
-| statecode | Status | picklist | yes |
-| statuscode | Status Reason | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| activityid | Activity ID | guid | yes | no | 8 |
+| subject | Subject | string | yes | no | 8 |
+| activitytypecode | Activity Type | picklist | yes | no | 8 |
+| regardingobjectid | Regarding | guid | no | no | 7 |
+| regardingobjecttype | Regarding Type | string | no | no | 5 |
+| ownerid | Owner | guid | yes | no | 8 |
+| scheduledstart | Start | datetime | no | no | 5 |
+| scheduledend | Due | datetime | no | no | 6 |
+| actualstart | Actual Start | datetime | no | no | 3 |
+| actualend | Actual End | datetime | no | no | 3 |
+| statecode | Status | picklist | yes | no | 8 |
+| statuscode | Status Reason | picklist | yes | no | 7 |
 
 ### email
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| activityid | Activity ID | guid | yes |
-| subject | Subject | string | no |
-| description | Body | string | no |
-| trackingtoken | Tracking Token | string | no |
-| senton | Sent On | datetime | no |
-| directioncode | Direction | bool | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| activityid | Activity ID | guid | yes | no | 6 |
+| subject | Subject | string | no | no | 6 |
+| description | Body | string | no | no | 4 |
+| trackingtoken | Tracking Token | string | no | no | 2 |
+| senton | Sent On | datetime | no | no | 5 |
+| directioncode | Direction | bool | no | no | 4 |
+| statecode | Status | picklist | yes | no | 6 |
 
 ### phonecall
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| activityid | Activity ID | guid | yes |
-| subject | Subject | string | yes |
-| description | Description | string | no |
-| phonenumber | Phone Number | string | no |
-| directioncode | Direction | bool | no |
-| scheduledend | Due | datetime | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| activityid | Activity ID | guid | yes | no | 5 |
+| subject | Subject | string | yes | no | 5 |
+| description | Description | string | no | no | 3 |
+| phonenumber | Phone Number | string | no | no | 4 |
+| directioncode | Direction | bool | no | no | 3 |
+| scheduledend | Due | datetime | no | no | 4 |
+| statecode | Status | picklist | yes | no | 5 |
 
 ### task
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| activityid | Activity ID | guid | yes |
-| subject | Subject | string | yes |
-| description | Description | string | no |
-| percentcomplete | Percent Complete | int | no |
-| scheduledend | Due | datetime | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| activityid | Activity ID | guid | yes | no | 7 |
+| subject | Subject | string | yes | no | 7 |
+| description | Description | string | no | no | 4 |
+| percentcomplete | Percent Complete | int | no | no | 3 |
+| scheduledend | Due | datetime | no | no | 6 |
+| statecode | Status | picklist | yes | no | 7 |
 
 ### appointment
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| activityid | Activity ID | guid | yes |
-| subject | Subject | string | yes |
-| description | Description | string | no |
-| location | Location | string | no |
-| scheduledstart | Start | datetime | yes |
-| scheduledend | End | datetime | yes |
-| isalldayevent | All Day Event | bool | no |
-| statecode | Status | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| activityid | Activity ID | guid | yes | no | 6 |
+| subject | Subject | string | yes | no | 6 |
+| description | Description | string | no | no | 3 |
+| location | Location | string | no | no | 4 |
+| scheduledstart | Start | datetime | yes | no | 6 |
+| scheduledend | End | datetime | yes | no | 6 |
+| isalldayevent | All Day Event | bool | no | no | 3 |
+| statecode | Status | picklist | yes | no | 6 |
 
 ### activityparty
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| activitypartyid | Activity Party ID | guid | yes |
-| activityid | Activity | guid | yes |
-| partyid | Party | guid | no |
-| partyobjecttypecode | Party Type | string | no |
-| participationtypemask | Participation Type | picklist | yes |
-| addressused | Address | string | no |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| activitypartyid | Activity Party ID | guid | yes | no | 4 |
+| activityid | Activity | guid | yes | no | 4 |
+| partyid | Party | guid | no | no | 4 |
+| partyobjecttypecode | Party Type | string | no | no | 4 |
+| participationtypemask | Participation Type | picklist | yes | no | 4 |
+| addressused | Address | string | no | no | 2 |
 
 ### incident
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| incidentid | Case ID | guid | yes |
-| title | Case Title | string | yes |
-| description | Description | string | no |
-| customerid | Customer | guid | yes |
-| customeridtype | Customer Type | string | yes |
-| primarycontactid | Contact | guid | no |
-| casetypecode | Case Type | picklist | no |
-| prioritycode | Priority | picklist | no |
-| caseorigincode | Origin | picklist | no |
-| productid | Product | guid | no |
-| subjectid | Subject | guid | no |
-| resolvedon | Resolved On | datetime | no |
-| ownerid | Owner | guid | yes |
-| statecode | Status | picklist | yes |
-| statuscode | Status Reason | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| incidentid | Case ID | guid | yes | no | 8 |
+| title | Case Title | string | yes | no | 8 |
+| description | Description | string | no | no | 5 |
+| customerid | Customer | guid | yes | no | 8 |
+| customeridtype | Customer Type | string | yes | no | 6 |
+| primarycontactid | Contact | guid | no | no | 6 |
+| casetypecode | Case Type | picklist | no | no | 5 |
+| prioritycode | Priority | picklist | no | no | 7 |
+| caseorigincode | Origin | picklist | no | no | 5 |
+| productid | Product | guid | no | no | 4 |
+| subjectid | Subject | guid | no | no | 4 |
+| resolvedon | Resolved On | datetime | no | no | 4 |
+| ownerid | Owner | guid | yes | no | 8 |
+| statecode | Status | picklist | yes | no | 8 |
+| statuscode | Status Reason | picklist | yes | no | 7 |
 
 ### knowledgearticle
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| knowledgearticleid | Article ID | guid | yes |
-| title | Title | string | yes |
-| keywords | Keywords | string | no |
-| content | Content | string | no |
-| languagelocaleid | Language | int | yes |
-| articlepublicnumber | Article Number | int | no |
-| isprimary | Primary Translation | bool | no |
-| isinternal | Internal Only | bool | no |
-| subjectid | Subject | guid | no |
-| statecode | Status | picklist | yes |
-| statuscode | Status Reason | picklist | yes |
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| knowledgearticleid | Article ID | guid | yes | no | 5 |
+| title | Title | string | yes | no | 5 |
+| keywords | Keywords | string | no | no | 3 |
+| content | Content | string | no | no | 4 |
+| languagelocaleid | Language | int | yes | no | 4 |
+| articlepublicnumber | Article Number | string | no | no | 4 |
+| isprimary | Primary Translation | bool | no | no | 2 |
+| isinternal | Internal Only | bool | no | no | 3 |
+| subjectid | Subject | guid | no | no | 3 |
+| statecode | Status | picklist | yes | no | 5 |
+| statuscode | Status Reason | picklist | yes | no | 5 |
 
 ### subject
 
-| logical_name | display_name | type | required |
-| --- | --- | --- | --- |
-| subjectid | Subject ID | guid | yes |
-| title | Title | string | yes |
-| description | Description | string | no |
-| parentsubject | Parent Subject | guid | no |
-
+| logical_name | display_name | type | required | is_custom | usage |
+| --- | --- | --- | --- | --- | --- |
+| subjectid | Subject ID | guid | yes | no | 4 |
+| title | Title | string | yes | no | 4 |
+| description | Description | string | no | no | 2 |
+| parentsubjectid | Parent Subject | guid | no | no | 2 |

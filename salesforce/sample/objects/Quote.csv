@@ -1,0 +1,13 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Quote ID,id,yes,no,6,,
+Name,Quote Name,string,yes,no,6,,
+QuoteNumber,Quote Number,autonumber,yes,no,6,,
+OpportunityId,Opportunity,reference,no,no,6,,
+Pricebook2Id,Price Book,reference,no,no,4,,
+TotalPrice,Total Price,currency,no,no,6,,
+Discount,Discount,double,no,no,2,,
+Tax,Tax,currency,no,no,2,,
+GrandTotal,Grand Total,currency,no,no,6,,
+ExpirationDate,Expiration Date,date,no,no,4,,
+Status,Status,picklist,yes,no,6,,
+OwnerId,Owner,reference,yes,no,6,,

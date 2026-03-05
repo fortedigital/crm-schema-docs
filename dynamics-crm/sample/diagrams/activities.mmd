@@ -3,3 +3,11 @@ title: Dynamics 365 — Activities
 ---
 erDiagram
 
+    ActivityPointer ||--o{ ActivityParty : "parties"
+    ActivityPointer ||--o{ Email : "email"
+    ActivityPointer ||--o{ PhoneCall : "phone call"
+    ActivityPointer ||--o{ Task : "task"
+    ActivityPointer ||--o{ Appointment : "appointment"
+    Account ||--o{ ActivityPointer : "regarding"
+    Contact ||--o{ ActivityPointer : "regarding"
+    Opportunity ||--o{ ActivityPointer : "regarding"

@@ -1,0 +1,7 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Product ID,id,yes,no,6,,
+Name,Product Name,string,yes,no,6,,
+ProductCode,Product Code,string,no,no,5,,
+Description,Description,textarea,no,no,3,,
+Family,Product Family,picklist,no,no,4,,
+IsActive,Active,boolean,yes,no,5,,

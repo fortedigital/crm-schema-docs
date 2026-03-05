@@ -1,7 +1,7 @@
-logical_name,display_name,type,required
-activitypartyid,Activity Party ID,guid,yes
-activityid,Activity,guid,yes
-partyid,Party,guid,no
-partyobjecttypecode,Party Type,string,no
-participationtypemask,Participation Type,picklist,yes
-addressused,Address,string,no
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+activitypartyid,Activity Party ID,guid,yes,no,4,,
+activityid,Activity,guid,yes,no,4,,
+partyid,Party,guid,no,no,4,,
+partyobjecttypecode,Party Type,string,no,no,4,,
+participationtypemask,Participation Type,picklist,yes,no,4,,
+addressused,Address,string,no,no,2,,

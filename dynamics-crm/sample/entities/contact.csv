@@ -1,14 +1,16 @@
-logical_name,display_name,type,required
-contactid,Contact ID,guid,yes
-firstname,First Name,string,no
-lastname,Last Name,string,yes
-emailaddress1,Email,string,no
-telephone1,Phone,string,no
-mobilephone,Mobile Phone,string,no
-address1_line1,Street 1,string,no
-address1_city,City,string,no
-birthdate,Birthday,date,no
-gendercode,Gender,picklist,no
-parentcustomerid,Account,guid,no
-ownerid,Owner,guid,yes
-statecode,Status,picklist,yes
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+contactid,Contact ID,guid,yes,no,10,,
+firstname,First Name,string,no,no,8,,
+lastname,Last Name,string,yes,no,10,,
+emailaddress1,Email,string,no,no,9,,
+telephone1,Phone,string,no,no,7,,
+mobilephone,Mobile Phone,string,no,no,5,,
+jobtitle,Job Title,string,no,no,6,,
+department,Department,string,no,no,4,,
+address1_line1,Street 1,string,no,no,4,,
+address1_city,City,string,no,no,4,,
+birthdate,Birthday,date,no,no,1,,
+gendercode,Gender,picklist,no,no,1,,
+parentcustomerid,Account,guid,no,no,9,,
+ownerid,Owner,guid,yes,no,10,,
+statecode,Status,picklist,yes,no,10,,
