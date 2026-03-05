@@ -8,43 +8,11 @@ ER diagrams and entity definitions covering the standard Dynamics 365 Sales and 
 scripts/gather/   →   data/raw/   →   scripts/clean/   →   scripts/generate/   →   diagrams/
 ```
 
-## Diagrams
+## Sample output
 
-Entity names and relationships only — properties are in the CSV files below.
+The [`sample/`](./sample/) directory contains placeholder output generated against a standard Dynamics 365 Sales and Service demo environment. It illustrates the pipeline output format but is **not** an export from any real environment.
 
-| File | Entities covered |
-|---|---|
-| [`diagrams/core-entities.mmd`](./diagrams/core-entities.mmd) | Account, Contact, Lead, Opportunity |
-| [`diagrams/sales-process.mmd`](./diagrams/sales-process.mmd) | Opportunity, Quote, Order, Invoice, Product, line items |
-| [`diagrams/activities.mmd`](./diagrams/activities.mmd) | ActivityPointer, Email, PhoneCall, Task, Appointment, ActivityParty |
-| [`diagrams/service.mmd`](./diagrams/service.mmd) | Incident (Case), KnowledgeArticle, Subject |
-
-## Entity definitions
-
-One CSV per entity: `logical_name, display_name, type, required`
-
-| Entity | File |
-|---|---|
-| Account | [`entities/account.csv`](./entities/account.csv) |
-| Contact | [`entities/contact.csv`](./entities/contact.csv) |
-| Lead | [`entities/lead.csv`](./entities/lead.csv) |
-| Opportunity | [`entities/opportunity.csv`](./entities/opportunity.csv) |
-| Quote | [`entities/quote.csv`](./entities/quote.csv) |
-| Quote Line | [`entities/quotedetail.csv`](./entities/quotedetail.csv) |
-| Order | [`entities/salesorder.csv`](./entities/salesorder.csv) |
-| Order Line | [`entities/salesorderdetail.csv`](./entities/salesorderdetail.csv) |
-| Invoice | [`entities/invoice.csv`](./entities/invoice.csv) |
-| Invoice Line | [`entities/invoicedetail.csv`](./entities/invoicedetail.csv) |
-| Product | [`entities/product.csv`](./entities/product.csv) |
-| Activity (base) | [`entities/activitypointer.csv`](./entities/activitypointer.csv) |
-| Email | [`entities/email.csv`](./entities/email.csv) |
-| Phone Call | [`entities/phonecall.csv`](./entities/phonecall.csv) |
-| Task | [`entities/task.csv`](./entities/task.csv) |
-| Appointment | [`entities/appointment.csv`](./entities/appointment.csv) |
-| Activity Party | [`entities/activityparty.csv`](./entities/activityparty.csv) |
-| Case (Incident) | [`entities/incident.csv`](./entities/incident.csv) |
-| Knowledge Article | [`entities/knowledgearticle.csv`](./entities/knowledgearticle.csv) |
-| Subject | [`entities/subject.csv`](./entities/subject.csv) |
+Run the pipeline against your own Dataverse environment to generate actual output in `diagrams/`, `entities/`, and `dynamics-crm-entity-reference.md`.
 
 ## Prerequisites
 
