@@ -46,10 +46,33 @@ One CSV per entity: `logical_name, display_name, type, required`
 | Knowledge Article | [`entities/knowledgearticle.csv`](./entities/knowledgearticle.csv) |
 | Subject | [`entities/subject.csv`](./entities/subject.csv) |
 
-## Running the pipeline
+## Prerequisites
 
-Prerequisites: PowerShell 7+, [pac CLI](https://aka.ms/install-pac-cli), Dataverse access.
-Optional: [`mmdc`](https://github.com/mermaid-js/mermaid-cli) for rendered diagram images in the .docx.
+### Tools
+
+| Tool | Install | Required for |
+|---|---|---|
+| [PowerShell 7+](https://aka.ms/powershell) | `winget install Microsoft.PowerShell` | All stages |
+| [Node.js](https://nodejs.org/) (includes npm) | Download from nodejs.org or `winget install OpenJS.NodeJS` | mmdc |
+| [Mermaid CLI (mmdc)](https://github.com/mermaid-js/mermaid-cli) | `npm install -g @mermaid-js/mermaid-cli` | Generate stage (PNG rendering) |
+
+### Access
+
+**Interactive auth (default)**
+
+The user account must have access to the target Dataverse environment and be assigned a security role that allows reading entity metadata. **System Customizer** or **System Administrator** is recommended. A read-only role without metadata access will not work.
+
+**Service principal auth**
+
+Requires an Azure AD app registration with the Dataverse `user_impersonation` permission granted. The app registration must also be associated with a Dataverse application user assigned a security role with metadata read access (System Customizer or System Administrator).
+
+Set `authMode: "ServicePrincipal"` in `scripts/gather/config.json` and provide the client secret via:
+
+```powershell
+$env:DATAVERSE_CLIENT_SECRET = '<your-secret>'
+```
+
+## Running the pipeline
 
 ```powershell
 cd scripts

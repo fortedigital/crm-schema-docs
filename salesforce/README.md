@@ -12,13 +12,40 @@ scripts/generate/ →  diagrams/      (Mermaid .mmd files)
                      salesforce-object-reference.md  +  diagrams-rendered/
 ```
 
+## Prerequisites
+
+### Tools
+
+| Tool | Install | Required for |
+|---|---|---|
+| [PowerShell 7+](https://aka.ms/powershell) | `winget install Microsoft.PowerShell` | All stages |
+| [Node.js](https://nodejs.org/) (includes npm) | Download from nodejs.org or `winget install OpenJS.NodeJS` | sf CLI and mmdc |
+| [Salesforce CLI (sf)](https://developer.salesforce.com/tools/salesforcecli) | `npm install -g @salesforce/cli` | Gather stage (auth + org selection) |
+| [Mermaid CLI (mmdc)](https://github.com/mermaid-js/mermaid-cli) | `npm install -g @mermaid-js/mermaid-cli` | Generate stage (PNG rendering) |
+
+### Access
+
+**Interactive auth (default)**
+
+The Salesforce user account must have:
+
+- **API Enabled** — profile permission required for all REST and Tooling API calls
+- **View Setup and Configuration** — required for Tooling API access used during object discovery
+- Read access to the objects being documented
+
+**System Administrator** profile satisfies all of these. For custom profiles, ensure both permissions above are explicitly enabled.
+
+**JWT auth (non-interactive)**
+
+In addition to the above user permissions, JWT auth requires a Connected App configured in the Salesforce org with:
+
+- OAuth enabled and a digital signature (X.509 certificate) uploaded
+- The running user's profile or permission set pre-authorized on the Connected App
+- `clientId`, `username`, and `jwtKeyFile` set in `scripts/gather/config.json`
+
 ## Quick start
 
 ```powershell
-# Prerequisites
-npm install --global @salesforce/cli
-npm install --global @mermaid-js/mermaid-cli
-
 # Full pipeline — authenticate interactively, then run all stages
 .\scripts\run-pipeline.ps1 -SelectOrg
 
