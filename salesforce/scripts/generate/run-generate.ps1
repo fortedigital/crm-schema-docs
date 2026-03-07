@@ -3,8 +3,9 @@
     Orchestrates the full diagram and CSV generation phase.
 
 .DESCRIPTION
-    Runs generate-diagrams, generate-object-csvs, and generate-md in sequence.
-    Reads from data/clean/ and writes to diagrams/, objects/, and the root .md.
+    Runs generate-diagrams, generate-object-csvs, generate-md, and generate-html
+    in sequence.
+    Reads from data/clean/ and writes to diagrams/, objects/, *.md, and *.html.
     No authentication required — operates on local files only.
 
 .EXAMPLE
@@ -24,6 +25,7 @@ $scripts = @(
     'generate-diagrams.ps1'
     'generate-object-csvs.ps1'
     'generate-md.ps1'
+    'generate-html.ps1'
 )
 
 foreach ($script in $scripts) {

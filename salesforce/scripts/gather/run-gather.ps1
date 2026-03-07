@@ -5,7 +5,8 @@
 .DESCRIPTION
     1. (Optional) Use sf CLI to pick an org and update config.json.
     2. Authenticate once via sf CLI; export token to env vars for child processes.
-    3. Run get-objects, get-fields, get-relationships, get-list-view-usage in sequence.
+    3. Run get-objects, get-fields, get-relationships, get-list-view-usage,
+       and get-operational-insights in sequence.
 
 .PARAMETER ConfigPath
     Path to config.json. Defaults to the config.json next to this script.
@@ -45,10 +46,11 @@ Connect-Salesforce -ConfigPath $ConfigPath
 
 # ── 3. Run gather scripts ─────────────────────────────────────────────────────
 $scripts = @(
-    'get-objects.ps1'          # must run first — all subsequent scripts depend on objects.json
-    'get-fields.ps1'           # also saves full describe/ cache
-    'get-relationships.ps1'    # reads from describe/ cache — no extra API calls
+    'get-objects.ps1'                # must run first — all subsequent scripts depend on objects.json
+    'get-fields.ps1'                 # also saves full describe/ cache
+    'get-relationships.ps1'          # reads from describe/ cache — no extra API calls
     'get-list-view-usage.ps1'
+    'get-operational-insights.ps1'   # must run after objects + fields
 )
 
 foreach ($script in $scripts) {

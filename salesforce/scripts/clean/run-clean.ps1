@@ -3,7 +3,8 @@
     Orchestrates the full data-cleaning phase.
 
 .DESCRIPTION
-    Runs clean-objects, clean-fields, and clean-relationships in sequence.
+    Runs clean-objects, clean-fields, clean-relationships, and
+    clean-operational-insights in sequence.
     Reads from data/raw/ and writes to data/clean/.
     No authentication required — operates on local files only.
 
@@ -24,6 +25,7 @@ $scripts = @(
     'clean-objects.ps1'
     'clean-fields.ps1'
     'clean-relationships.ps1'
+    'clean-operational-insights.ps1'
 )
 
 foreach ($script in $scripts) {
