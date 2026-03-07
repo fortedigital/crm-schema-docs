@@ -11,6 +11,10 @@
       display_name   — human-readable label
       type           — simplified type (string, int, guid, picklist, …)
       required       — yes / no
+      source_type    — simple / calculated / rollup
+      is_lookup      — yes / no  (lookup/reference field)
+      lookup_targets — target entity names for lookup fields
+      option_values  — available option set values (value:label pairs)
       is_custom      — yes / no  (custom field added outside standard schema)
       usage          — number of saved views this field appears in as a column
       bu_usage       — qualitative notes on which business units use it  [manual]
@@ -74,7 +78,7 @@ foreach ($entity in $entityNames) {
 
     # ── Write new CSV ─────────────────────────────────────────────────────────
     $lines = [System.Collections.Generic.List[string]]::new()
-    $lines.Add('logical_name,display_name,type,required,is_custom,usage,bu_usage,comment')
+    $lines.Add('logical_name,display_name,type,required,source_type,is_lookup,lookup_targets,option_values,is_custom,usage,bu_usage,comment')
 
     foreach ($a in $attrs) {
         $existing = $manual[$a.logicalName]
@@ -83,6 +87,10 @@ foreach ($entity in $entityNames) {
             ConvertTo-CsvField $a.displayName
             ConvertTo-CsvField $a.type
             ConvertTo-CsvField $a.required
+            ConvertTo-CsvField ($a.sourceType ?? 'simple')
+            ConvertTo-CsvField $(if ($a.isLookup) { 'yes' } else { 'no' })
+            ConvertTo-CsvField ($a.lookupTargets ?? '')
+            ConvertTo-CsvField ($a.optionValues ?? '')
             ConvertTo-CsvField $(if ($a.isCustom) { 'yes' } else { 'no' })
             ConvertTo-CsvField ($a.viewUsage ?? 0)
             ConvertTo-CsvField ($existing?.bu_usage ?? '')

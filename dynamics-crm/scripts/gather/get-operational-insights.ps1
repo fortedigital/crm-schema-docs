@@ -28,16 +28,16 @@
     Optional. Run for a single entity logical name only (e.g. 'account').
     Useful for testing before running against all entities.
 
-.PARAMETER Resume
-    Skip entities that already have an output file in operational-insights/.
-    Use this to continue a previous run that was interrupted.
+.PARAMETER Refresh
+    Force re-fetch of all entities, even if output files already exist.
+    Without this switch, entities with existing output files are skipped (resume mode).
 
 .EXAMPLE
     .\get-operational-insights.ps1 -Entity account
 
 .EXAMPLE
-    # Continue from where a previous run stopped
-    .\get-operational-insights.ps1 -Resume
+    # Force re-fetch of all entities
+    .\get-operational-insights.ps1 -Refresh
 #>
 
 #Requires -Version 7.0
@@ -45,7 +45,7 @@
 param(
     [string]$ConfigPath = "$PSScriptRoot/config.json",
     [string]$Entity,
-    [switch]$Resume
+    [switch]$Refresh
 )
 
 . "$PSScriptRoot/connect.ps1"
@@ -76,22 +76,22 @@ if ($Entity) {
 
 # When running standalone (not from run-gather.ps1), clear any stale inherited token
 # so Connect-Dataverse does a fresh interactive auth
-if (($Entity -or $Resume) -and $env:DATAVERSE_TOKEN) {
+if (($Entity -or -not $Refresh) -and $env:DATAVERSE_TOKEN) {
     Write-Host "Clearing stale inherited token — will re-authenticate" -ForegroundColor DarkGray
     Remove-Item Env:DATAVERSE_TOKEN -ErrorAction SilentlyContinue
     Remove-Item Env:DATAVERSE_URL   -ErrorAction SilentlyContinue
 }
 
-if ($Resume) {
+if (-not $Refresh) {
     $before = $entityDefs.Count
     $entityDefs = @($entityDefs | Where-Object {
         $name = $_.LogicalName ?? $_.logicalName
         -not (Test-Path (Join-Path $outDir "$name.json"))
     })
     $skipped = $before - $entityDefs.Count
-    Write-Host "Resume mode: skipping $skipped already-fetched entities, $($entityDefs.Count) remaining" -ForegroundColor Cyan
+    Write-Host "Resume mode (default): skipping $skipped already-fetched entities, $($entityDefs.Count) remaining" -ForegroundColor Cyan
     if ($entityDefs.Count -eq 0) {
-        Write-Host "All entities already fetched. Nothing to do." -ForegroundColor Green
+        Write-Host "All entities already fetched. Use -Refresh to force re-fetch." -ForegroundColor Green
         exit 0
     }
 }

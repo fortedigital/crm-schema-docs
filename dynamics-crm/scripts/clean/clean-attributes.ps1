@@ -10,6 +10,9 @@
       - Extracts display name from Dataverse Label object
       - Maps AttributeTypeName to a simple type (string, int, decimal, guid, etc.)
       - Extracts required level (yes / no)
+      - Classifies source type (simple / calculated / rollup)
+      - Detects lookup fields and extracts target entities
+      - Extracts option set values for picklist fields
       - Joins view usage count from data/raw/view-usage/<entity>.json if present
       - Drops virtual shadow attributes (AttributeOf != null)
       - Drops binary / internal types (Image, File, Virtual, CalendarRules)
@@ -34,6 +37,23 @@ function Get-Label($obj) {
     $label = $obj.UserLocalizedLabel?.Label
     if (-not $label) { $label = ($obj.LocalizedLabels | Select-Object -First 1)?.Label }
     return ($label ?? '').Trim()
+}
+
+function Format-OptionSetOptions($options) {
+    if (-not $options -or $options.Count -eq 0) { return '' }
+    $pairs = foreach ($opt in $options) {
+        $label = Get-Label $opt.Label
+        if ($label) { "$($opt.Value):$label" }
+    }
+    return ($pairs -join '; ')
+}
+
+function Get-SourceTypeLabel($sourceType) {
+    switch ($sourceType) {
+        1       { 'calculated' }
+        2       { 'rollup' }
+        default { 'simple' }
+    }
 }
 
 $typeMap = @{
@@ -103,15 +123,22 @@ foreach ($entity in $entityNames) {
         (Get-Label $_.DisplayName)
     } | ForEach-Object {
         $typeName = $_.AttributeTypeName?.Value ?? $_.AttributeType
+        $simpleType = $typeMap[$typeName] ?? 'string'
+        $isLookup = $typeName -in @('LookupType', 'CustomerType', 'OwnerType', 'PartyListType')
+
         [PSCustomObject]@{
-            logicalName   = $_.LogicalName
-            displayName   = Get-Label $_.DisplayName
-            type          = $typeMap[$typeName] ?? 'string'
-            required      = if ($_.RequiredLevel.Value -in @('SystemRequired', 'ApplicationRequired')) { 'yes' } else { 'no' }
-            isPrimaryId   = [bool]$_.IsPrimaryId
-            isPrimaryName = [bool]$_.IsPrimaryName
-            isCustom      = [bool]$_.IsCustomAttribute
-            viewUsage     = $viewUsage[$_.LogicalName] ?? 0
+            logicalName    = $_.LogicalName
+            displayName    = Get-Label $_.DisplayName
+            type           = $simpleType
+            required       = if ($_.RequiredLevel.Value -in @('SystemRequired', 'ApplicationRequired')) { 'yes' } else { 'no' }
+            sourceType     = Get-SourceTypeLabel $_.SourceType
+            isLookup       = $isLookup
+            lookupTargets  = if ($isLookup -and $_._LookupTargets) { ($_._LookupTargets -join ', ') } else { '' }
+            optionValues   = if ($_._OptionSetOptions) { Format-OptionSetOptions $_._OptionSetOptions } else { '' }
+            isPrimaryId    = [bool]$_.IsPrimaryId
+            isPrimaryName  = [bool]$_.IsPrimaryName
+            isCustom       = [bool]$_.IsCustomAttribute
+            viewUsage      = $viewUsage[$_.LogicalName] ?? 0
         }
     }
 

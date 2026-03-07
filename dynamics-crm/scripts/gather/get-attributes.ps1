@@ -2,6 +2,13 @@
 .SYNOPSIS
     Fetches attribute (field) metadata for each entity listed in config.json.
 
+.DESCRIPTION
+    For each entity, fetches:
+      - Core attribute metadata (name, type, required level, etc.)
+      - SourceType (simple / calculated / rollup)
+      - Lookup targets (which entities a lookup field points to)
+      - Option set values (picklist, multi-select, state, status options)
+
 .OUTPUTS
     data/raw/attributes/<entity>.json — one file per entity
 #>
@@ -41,6 +48,7 @@ $select = @(
     'IsPrimaryName'
     'IsCustomAttribute'
     'AttributeOf'         # virtual/calculation parent field
+    'SourceType'          # null/0 = simple, 1 = calculated, 2 = rollup
 ) -join ','
 
 $total   = $entityNames.Count
@@ -53,10 +61,56 @@ foreach ($entity in $entityNames) {
     $url   = "EntityDefinitions(LogicalName='$entity')/Attributes?`$select=$select"
     $attrs = Invoke-DataverseGet -RelativeUrl $url
 
-    $outFile = Join-Path $outDir "$entity.json"
-    $attrs | ConvertTo-Json -Depth 10 | Set-Content $outFile -Encoding UTF8
+    # ── Enrich: lookup targets ────────────────────────────────────────────
+    $lookupMap = @{}
+    try {
+        $lookupUrl = "EntityDefinitions(LogicalName='$entity')/Attributes/Microsoft.Dynamics.CRM.LookupAttributeMetadata?`$select=LogicalName,Targets"
+        $lookups   = Invoke-DataverseGet -RelativeUrl $lookupUrl
+        foreach ($l in $lookups) {
+            if ($l.Targets) { $lookupMap[$l.LogicalName] = $l.Targets }
+        }
+    } catch {
+        Write-Warning "  Could not fetch lookup targets for $entity`: $_"
+    }
 
-    Write-Host " $($attrs.Count) attributes" -ForegroundColor Green
+    # ── Enrich: picklist option sets ──────────────────────────────────────
+    $optionMap = @{}
+    foreach ($castType in @(
+        'PicklistAttributeMetadata'
+        'MultiSelectPicklistAttributeMetadata'
+        'StateAttributeMetadata'
+        'StatusAttributeMetadata'
+    )) {
+        try {
+            $osUrl = "EntityDefinitions(LogicalName='$entity')/Attributes/Microsoft.Dynamics.CRM.$castType?`$select=LogicalName&`$expand=OptionSet"
+            $osList = Invoke-DataverseGet -RelativeUrl $osUrl
+            foreach ($os in $osList) {
+                if ($os.OptionSet -and $os.OptionSet.Options) {
+                    $optionMap[$os.LogicalName] = $os.OptionSet.Options
+                }
+            }
+        } catch {
+            # Some types may not exist for this entity — that's fine
+        }
+    }
+
+    # ── Merge enrichment data into main attributes ────────────────────────
+    foreach ($attr in $attrs) {
+        $name = $attr.LogicalName
+        if ($lookupMap.ContainsKey($name)) {
+            $attr | Add-Member -NotePropertyName '_LookupTargets' -NotePropertyValue $lookupMap[$name] -Force
+        }
+        if ($optionMap.ContainsKey($name)) {
+            $attr | Add-Member -NotePropertyName '_OptionSetOptions' -NotePropertyValue $optionMap[$name] -Force
+        }
+    }
+
+    $outFile = Join-Path $outDir "$entity.json"
+    $attrs | ConvertTo-Json -Depth 20 | Set-Content $outFile -Encoding UTF8
+
+    $lookupCount  = $lookupMap.Count
+    $optionCount  = $optionMap.Count
+    Write-Host " $($attrs.Count) attributes ($lookupCount lookups, $optionCount option sets)" -ForegroundColor Green
 }
 
 Write-Host "Attributes saved → $outDir" -ForegroundColor Green
