@@ -82,6 +82,18 @@ function ConvertTo-MdCell($value) {
     return ([string]$value).Trim() -replace '\r?\n', ' ' -replace '\|', '\|'
 }
 
+# Truncate long option_values to N items + "(+X more)" to keep tables readable
+function Truncate-OptionValues($value, [int]$max = 5) {
+    if (-not $value -or $value.Trim() -eq '') { return '' }
+    $pairs = ($value -split ';\s*') | Where-Object { $_.Trim() }
+    if ($pairs.Count -le $max) { return $value }
+    $shown = ($pairs | Select-Object -First $max) -join '; '
+    return "$shown (+$($pairs.Count - $max) more)"
+}
+
+# Visible columns for the Markdown entity table (drop raw flag columns, combine into readable set)
+$mdEntityHeaders = @('logical_name','display_name','type','required','source_type','is_lookup','lookup_targets','option_values','is_custom','usage','bu_usage','comment')
+
 function ConvertTo-MdTable($csvPath) {
     $rows = Import-Csv $csvPath
     if (-not $rows) { return '_No data._' }
@@ -94,7 +106,11 @@ function ConvertTo-MdTable($csvPath) {
         '| ' + ($sep -join ' | ') + ' |'
     )
     foreach ($row in $rows) {
-        $cells = $headers | ForEach-Object { ConvertTo-MdCell $row.$_ }
+        $cells = $headers | ForEach-Object {
+            $v = $row.$_
+            if ($_ -eq 'option_values') { ConvertTo-MdCell (Truncate-OptionValues $v) }
+            else { ConvertTo-MdCell $v }
+        }
         $lines += '| ' + ($cells -join ' | ') + ' |'
     }
     return $lines -join "`n"

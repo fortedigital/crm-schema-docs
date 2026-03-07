@@ -26,6 +26,7 @@ $outDir = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.out
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
 Connect-Dataverse -ConfigPath $ConfigPath
+Confirm-DataverseAuth -ConfigPath $ConfigPath
 
 # Entity list is produced by get-entities.ps1 — must run first
 $entitiesFile = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.output.rawDir))) 'entities.json'
@@ -74,6 +75,7 @@ foreach ($entity in $entityNames) {
     }
 
     # ── Enrich: picklist option sets ──────────────────────────────────────
+    # Each attribute may reference a local OptionSet or a GlobalOptionSet — expand both.
     $optionMap = @{}
     foreach ($castType in @(
         'PicklistAttributeMetadata'
@@ -82,15 +84,16 @@ foreach ($entity in $entityNames) {
         'StatusAttributeMetadata'
     )) {
         try {
-            $osUrl = "EntityDefinitions(LogicalName='$entity')/Attributes/Microsoft.Dynamics.CRM.$castType?`$select=LogicalName&`$expand=OptionSet"
+            $osUrl = "EntityDefinitions(LogicalName='$entity')/Attributes/Microsoft.Dynamics.CRM.${castType}?`$select=LogicalName&`$expand=OptionSet,GlobalOptionSet"
             $osList = Invoke-DataverseGet -RelativeUrl $osUrl
             foreach ($os in $osList) {
-                if ($os.OptionSet -and $os.OptionSet.Options) {
-                    $optionMap[$os.LogicalName] = $os.OptionSet.Options
-                }
+                $opts = if     ($os.OptionSet       -and $os.OptionSet.Options)       { $os.OptionSet.Options }
+                        elseif ($os.GlobalOptionSet -and $os.GlobalOptionSet.Options) { $os.GlobalOptionSet.Options }
+                        else   { $null }
+                if ($opts) { $optionMap[$os.LogicalName] = $opts }
             }
         } catch {
-            # Some types may not exist for this entity — that's fine
+            Write-Warning "  Option set fetch failed ($castType): $_"
         }
     }
 

@@ -33,10 +33,7 @@ $outDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.output.rawDir)
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
 Connect-Dataverse -ConfigPath $ConfigPath
-
-# Quick access check — call WhoAmI to verify the token works
-$whoAmI = Invoke-DataverseGet "WhoAmI"
-Write-Host "Authenticated as UserId: $($whoAmI.UserId) | OrgId: $($whoAmI.OrganizationId)" -ForegroundColor Green
+Confirm-DataverseAuth -ConfigPath $ConfigPath
 
 $select = @(
     'MetadataId'

@@ -150,6 +150,100 @@ function Get-MermaidTitle($mmdFile) {
     if ($titleLine) { ($titleLine -replace '^title:\s*', '').Trim() } else { $name }
 }
 
+# ── Field rendering helpers ───────────────────────────────────────────────────
+
+function Get-TypeClass($type) {
+    switch ($type) {
+        'guid'     { 'type-guid' }
+        'string'   { 'type-string' }
+        'int'      { 'type-int' }
+        'decimal'  { 'type-decimal' }
+        'bool'     { 'type-bool' }
+        'datetime' { 'type-datetime' }
+        'picklist' { 'type-picklist' }
+        default    { 'type-other' }
+    }
+}
+
+function Format-LookupTargetsHtml($targets, [System.Collections.Generic.HashSet[string]]$knownEntities) {
+    if (-not $targets -or $targets.Trim() -eq '') { return '' }
+    $parts = ($targets -split ',\s*') | Where-Object { $_.Trim() }
+    $links = foreach ($t in $parts) {
+        $t = $t.Trim()
+        if ($knownEntities -and $knownEntities.Contains($t)) {
+            "<a class=`"lookup-link`" href=`"#entity-$t`">$([System.Net.WebUtility]::HtmlEncode($t))</a>"
+        } else {
+            [System.Net.WebUtility]::HtmlEncode($t)
+        }
+    }
+    return ($links -join ', ')
+}
+
+function Format-OptionValuesHtml($optValues) {
+    if (-not $optValues -or $optValues.Trim() -eq '') { return '' }
+    $pairs = ($optValues -split ';\s*') | Where-Object { $_.Trim() }
+    $items = ($pairs | ForEach-Object { "<li>$([System.Net.WebUtility]::HtmlEncode($_.Trim()))</li>" }) -join ''
+    if ($pairs.Count -le 4) {
+        return "<ul class=`"option-list`">$items</ul>"
+    }
+    return "<details class=`"option-detail`"><summary>$($pairs.Count) values</summary><ul class=`"option-list`">$items</ul></details>"
+}
+
+function Get-EntityComplexity([object[]]$rows) {
+    if (-not $rows -or $rows.Count -eq 0) {
+        return [PSCustomObject]@{ Required=0; Calculated=0; Lookups=0; OptionSets=0; Custom=0; Total=0; Score=0 }
+    }
+    $req  = @($rows | Where-Object { $_.required   -eq 'yes' }).Count
+    $calc = @($rows | Where-Object { $_.source_type -in @('calculated','rollup') }).Count
+    $look = @($rows | Where-Object { $_.is_lookup   -eq 'yes' }).Count
+    $opts = @($rows | Where-Object { $_.type        -eq 'picklist' }).Count
+    $cust = @($rows | Where-Object { $_.is_custom   -eq 'yes' }).Count
+    [PSCustomObject]@{
+        Required   = $req
+        Calculated = $calc
+        Lookups    = $look
+        OptionSets = $opts
+        Custom     = $cust
+        Total      = $rows.Count
+        Score      = $req + ($calc * 2) + $look + $opts + $cust
+    }
+}
+
+function Format-FieldTable([object[]]$rows, [System.Collections.Generic.HashSet[string]]$knownEntities) {
+    $sb = [System.Text.StringBuilder]::new()
+    $sb.AppendLine('<table class="sortable">') | Out-Null
+    $sb.AppendLine('  <thead><tr>') | Out-Null
+    foreach ($h in @('Logical Name','Display Name','Type','Flags','Lookup Targets','Option Values','View Usage','BU Usage','Comment')) {
+        $sb.AppendLine("    <th data-sort-col>$h <span class=`"sort-arrow`"></span></th>") | Out-Null
+    }
+    $sb.AppendLine('  </tr></thead>') | Out-Null
+    $sb.AppendLine('  <tbody>') | Out-Null
+    foreach ($row in $rows) {
+        $typeCls  = Get-TypeClass $row.type
+        $typeCell = "<span class=`"type-chip $typeCls`">$([System.Net.WebUtility]::HtmlEncode($row.type))</span>"
+
+        $flags = [System.Collections.Generic.List[string]]::new()
+        if ($row.required    -eq 'yes')         { $flags.Add("<span class=`"req-badge`">required</span>") }
+        if ($row.source_type -eq 'calculated')  { $flags.Add("<span class=`"src-badge src-calculated`">calc</span>") }
+        if ($row.source_type -eq 'rollup')      { $flags.Add("<span class=`"src-badge src-rollup`">rollup</span>") }
+        if ($row.is_custom   -eq 'yes')         { $flags.Add("<span class=`"custom-badge`">custom</span>") }
+        $flagsCell  = if ($flags.Count -gt 0) { $flags -join ' ' } else { '' }
+
+        $lookupCell = Format-LookupTargetsHtml $row.lookup_targets $knownEntities
+        $optionCell = Format-OptionValuesHtml  $row.option_values
+        $usageVal   = [int]($row.usage ?? 0)
+        $nameCell   = [System.Net.WebUtility]::HtmlEncode($row.logical_name)
+        $dispCell   = [System.Net.WebUtility]::HtmlEncode($row.display_name)
+        $buCell     = [System.Net.WebUtility]::HtmlEncode($row.bu_usage ?? '')
+        $cmtCell    = [System.Net.WebUtility]::HtmlEncode($row.comment  ?? '')
+
+        $sb.AppendLine("  <tr><td>$nameCell</td><td>$dispCell</td><td>$typeCell</td><td>$flagsCell</td><td>$lookupCell</td><td>$optionCell</td><td data-sort-value=`"$usageVal`">$usageVal</td><td>$buCell</td><td>$cmtCell</td></tr>") | Out-Null
+    }
+    $sb.AppendLine('  </tbody>') | Out-Null
+    $sb.AppendLine('</table>') | Out-Null
+    return $sb.ToString()
+}
+
 # ── HTML document generator ──────────────────────────────────────────────────
 function Build-HtmlDocument {
     param(
@@ -285,6 +379,56 @@ function Build-HtmlDocument {
 
     /* Domain summary table */
     .domain-summary { margin: 1.5rem 0; }
+
+    /* Field type chips */
+    .type-chip { display: inline-block; font-size: 0.8em; padding: 1px 7px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+    .type-guid     { background: #dbeafe; color: #1d4ed8; }
+    .type-string   { background: #dcfce7; color: #166534; }
+    .type-int,
+    .type-decimal  { background: #ecfdf5; color: #065f46; }
+    .type-bool     { background: #f5f3ff; color: #6d28d9; }
+    .type-datetime { background: #eff6ff; color: #1e40af; }
+    .type-picklist { background: #fff7ed; color: #9a3412; }
+    .type-other    { background: #f1f5f9; color: #475569; }
+    /* Field flag badges */
+    .req-badge  { display: inline-block; font-size: 0.75em; padding: 1px 6px; border-radius: 4px; font-weight: 700; background: #fee2e2; color: #b91c1c; margin-right: 2px; }
+    .src-badge  { display: inline-block; font-size: 0.75em; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-right: 2px; }
+    .src-calculated { background: #fef9c3; color: #854d0e; }
+    .src-rollup     { background: #ffedd5; color: #9a3412; }
+    .custom-badge   { display: inline-block; font-size: 0.75em; padding: 1px 6px; border-radius: 4px; background: #ede9fe; color: #5b21b6; font-weight: 600; margin-right: 2px; }
+    /* Lookup links */
+    .lookup-link { color: var(--accent); text-decoration: none; font-size: 0.85em; }
+    .lookup-link:hover { text-decoration: underline; }
+    /* Option values */
+    .option-list { margin: 0; padding-left: 1.2em; font-size: 0.85em; max-height: 12em; overflow-y: auto; }
+    details.option-detail summary { cursor: pointer; font-size: 0.85em; color: #656d76; }
+    /* Complexity bar */
+    .complexity-bar { display: flex; gap: .4rem; margin: .4rem 0 .8rem; flex-wrap: wrap; }
+    .cx-stat { font-size: 0.72em; padding: 2px 8px; border-radius: 10px; background: var(--section-bg); border: 1px solid var(--border); }
+    .cx-req  { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .cx-calc { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+    .cx-look { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+    .cx-opts { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+    .cx-cust { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    @media (prefers-color-scheme: dark) {
+      .type-guid     { background: #1e3a5f; color: #93c5fd; }
+      .type-string   { background: #14402a; color: #86efac; }
+      .type-int,
+      .type-decimal  { background: #14402a; color: #86efac; }
+      .type-bool     { background: #2e1065; color: #c4b5fd; }
+      .type-datetime { background: #1e3a5f; color: #93c5fd; }
+      .type-picklist { background: #431407; color: #fdba74; }
+      .type-other    { background: #21262d; color: #8b949e; }
+      .req-badge      { background: #7f1d1d; color: #fca5a5; }
+      .src-calculated { background: #422006; color: #fde68a; }
+      .src-rollup     { background: #431407; color: #fed7aa; }
+      .custom-badge   { background: #2e1065; color: #c4b5fd; }
+      .cx-req  { background: #7f1d1d; color: #fca5a5; border-color: #b91c1c; }
+      .cx-calc { background: #422006; color: #fde68a; border-color: #854d0e; }
+      .cx-look { background: #1e3a5f; color: #93c5fd; border-color: #1d4ed8; }
+      .cx-opts { background: #431407; color: #fdba74; border-color: #9a3412; }
+      .cx-cust { background: #2e1065; color: #c4b5fd; border-color: #5b21b6; }
+    }
   </style>
 </head>
 <body>
@@ -340,6 +484,7 @@ function Build-HtmlDocument {
         $doc.AppendLine('      </ul>') | Out-Null
     }
 
+    $doc.AppendLine('      <h4><a href="#migration-complexity">Migration Complexity</a></h4>') | Out-Null
     $doc.AppendLine('      <h4>Entity Definitions</h4>') | Out-Null
     $doc.AppendLine('      <ul>') | Out-Null
     foreach ($entity in $EntityList) {
@@ -373,6 +518,39 @@ function Build-HtmlDocument {
 
     # ── Entity tables ────────────────────────────────────────────────────────
     $doc.AppendLine('  <h2>Entity Definitions</h2>') | Out-Null
+
+    # Build known-entity set for linking lookup targets within this document
+    $knownEntitySet = [System.Collections.Generic.HashSet[string]]::new()
+    foreach ($e in $EntityList) { $knownEntitySet.Add($e) | Out-Null }
+
+    # ── Migration Complexity Summary ─────────────────────────────────────────
+    $complexityRows = [System.Collections.Generic.List[PSCustomObject]]::new()
+    foreach ($entity in $EntityList) {
+        $csvFile = Join-Path $entitiesDir "$entity.csv"
+        if (-not (Test-Path $csvFile)) { continue }
+        $allRowsCx = @(Import-Csv $csvFile)
+        if (-not $allRowsCx -or $allRowsCx.Count -eq 0) { continue }
+        $cx = Get-EntityComplexity $allRowsCx
+        $eiCx = if ($Insights.ContainsKey($entity)) { $Insights[$entity] } else { $null }
+        $complexityRows.Add([PSCustomObject]@{
+            Entity     = $entity
+            Fields     = $cx.Total
+            Required   = $cx.Required
+            Calculated = $cx.Calculated
+            Lookups    = $cx.Lookups
+            OptionSets = $cx.OptionSets
+            Custom     = $cx.Custom
+            Score      = $cx.Score
+            DataRows   = if ($eiCx -and $eiCx.rowCount) { [long]$eiCx.rowCount } else { 0 }
+        })
+    }
+    if ($complexityRows.Count -gt 0) {
+        $doc.AppendLine('  <h3 id="migration-complexity">Migration Complexity Summary</h3>') | Out-Null
+        $doc.AppendLine('  <p style="font-size:0.9em;color:#656d76;">Score&nbsp;=&nbsp;Required&nbsp;+&nbsp;(Calculated&nbsp;&times;&nbsp;2)&nbsp;+&nbsp;Lookups&nbsp;+&nbsp;OptionSets&nbsp;+&nbsp;Custom. Sort by Score to prioritise migration effort.</p>') | Out-Null
+        $cxHeaders = @('Entity','Fields','Required','Calculated','Lookups','OptionSets','Custom','Score','DataRows')
+        $doc.AppendLine((ConvertTo-SortableTable $complexityRows $cxHeaders)) | Out-Null
+    }
+
     $doc.AppendLine('  <div class="entity-section">') | Out-Null
 
     foreach ($entity in $EntityList) {
@@ -400,34 +578,42 @@ function Build-HtmlDocument {
             $displayName += " ($([System.Net.WebUtility]::HtmlEncode($ei.displayName)))"
         }
 
-        $safeEntity = [System.Net.WebUtility]::HtmlEncode($entity)
-        $allRows = Import-Csv $csvFile
-        if (-not $allRows) {
+        $allRows = @(Import-Csv $csvFile)
+        if (-not $allRows -or $allRows.Count -eq 0) {
             $doc.AppendLine("  <details id=`"entity-$entity`">") | Out-Null
             $doc.AppendLine("    <summary>$displayName $badgeHtml$rowCountLabel</summary>") | Out-Null
             $doc.AppendLine('    <div class="table-wrap"><p><em>No data.</em></p></div>') | Out-Null
             $doc.AppendLine('  </details>') | Out-Null
         } else {
-            $headers    = $allRows[0].PSObject.Properties.Name
-            $usedRows   = $allRows | Where-Object { [int]($_.usage) -gt 0 }
-            $unusedRows = $allRows | Where-Object { [int]($_.usage) -eq 0 }
+            $cx          = Get-EntityComplexity $allRows
+            $usedRows    = @($allRows | Where-Object { [int]($_.usage) -gt 0 })
+            $unusedRows  = @($allRows | Where-Object { [int]($_.usage) -eq 0 })
+            $usedCount   = $usedRows.Count
+            $unusedCount = $unusedRows.Count
 
-            $usedCount   = @($usedRows).Count
-            $unusedCount = @($unusedRows).Count
+            # Complexity bar
+            $cxParts = [System.Collections.Generic.List[string]]::new()
+            if ($cx.Required   -gt 0) { $cxParts.Add("<span class=`"cx-stat cx-req`">$($cx.Required) required</span>") }
+            if ($cx.Calculated -gt 0) { $cxParts.Add("<span class=`"cx-stat cx-calc`">$($cx.Calculated) calculated/rollup</span>") }
+            if ($cx.Lookups    -gt 0) { $cxParts.Add("<span class=`"cx-stat cx-look`">$($cx.Lookups) lookups</span>") }
+            if ($cx.OptionSets -gt 0) { $cxParts.Add("<span class=`"cx-stat cx-opts`">$($cx.OptionSets) option sets</span>") }
+            if ($cx.Custom     -gt 0) { $cxParts.Add("<span class=`"cx-stat cx-cust`">$($cx.Custom) custom</span>") }
+            $cxBar = if ($cxParts.Count -gt 0) { '<div class="complexity-bar">' + ($cxParts -join '') + '</div>' } else { '' }
 
             $doc.AppendLine("  <details id=`"entity-$entity`">") | Out-Null
-            $doc.AppendLine("    <summary>$displayName $badgeHtml$rowCountLabel &mdash; $usedCount used, $unusedCount unused</summary>") | Out-Null
+            $doc.AppendLine("    <summary>$displayName $badgeHtml$rowCountLabel &mdash; $($cx.Total) fields, $usedCount active</summary>") | Out-Null
             $doc.AppendLine('    <div class="table-wrap">') | Out-Null
+            if ($cxBar) { $doc.AppendLine("    $cxBar") | Out-Null }
 
             if ($usedCount -gt 0) {
-                $doc.AppendLine('    <h4>Active Properties</h4>') | Out-Null
-                $doc.AppendLine((ConvertTo-SortableTable $usedRows $headers)) | Out-Null
+                $doc.AppendLine('    <h4>Active Fields</h4>') | Out-Null
+                $doc.AppendLine((Format-FieldTable $usedRows $knownEntitySet)) | Out-Null
             }
 
             if ($unusedCount -gt 0) {
                 $doc.AppendLine('    <details class="unused-section">') | Out-Null
-                $doc.AppendLine("      <summary>Unused Properties ($unusedCount)</summary>") | Out-Null
-                $doc.AppendLine((ConvertTo-SortableTable $unusedRows $headers)) | Out-Null
+                $doc.AppendLine("      <summary>Unused Fields ($unusedCount)</summary>") | Out-Null
+                $doc.AppendLine((Format-FieldTable $unusedRows $knownEntitySet)) | Out-Null
                 $doc.AppendLine('    </details>') | Out-Null
             }
 

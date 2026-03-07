@@ -25,6 +25,7 @@ $outDir = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.out
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
 Connect-Dataverse -ConfigPath $ConfigPath
+Confirm-DataverseAuth -ConfigPath $ConfigPath
 
 # Entity list is produced by get-entities.ps1 — must run first
 $entitiesFile = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.output.rawDir))) 'entities.json'

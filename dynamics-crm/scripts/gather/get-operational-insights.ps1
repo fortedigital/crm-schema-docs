@@ -97,6 +97,7 @@ if (-not $Refresh) {
 }
 
 Connect-Dataverse -ConfigPath $ConfigPath
+Confirm-DataverseAuth -ConfigPath $ConfigPath
 
 # ── Helper: safe count query ─────────────────────────────────────────────────
 function Get-EntityCount {

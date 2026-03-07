@@ -28,6 +28,7 @@ Write-Host "=== Dynamics 365 data gather — $(Get-Date -Format 'yyyy-MM-dd HH:m
 
 # ── 1. Authenticate once ──────────────────────────────────────────────────────
 Connect-Dataverse -ConfigPath $ConfigPath
+Confirm-DataverseAuth -ConfigPath $ConfigPath
 # $env:DATAVERSE_TOKEN and $env:DATAVERSE_URL are now set for child processes
 
 # ── 2. Clean raw output directory ────────────────────────────────────────────
@@ -51,7 +52,20 @@ foreach ($script in $scripts) {
     $scriptPath = Join-Path $PSScriptRoot $script
     Write-Host "`n--- $script ---" -ForegroundColor Yellow
     pwsh -NoProfile -File $scriptPath -ConfigPath $ConfigPath
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -eq 91) {
+        # Child script detected auth failure — use Confirm-DataverseAuth to prompt + retry
+        $script:Connection = $null
+        Remove-Item Env:DATAVERSE_TOKEN -ErrorAction SilentlyContinue
+        Remove-Item Env:DATAVERSE_URL   -ErrorAction SilentlyContinue
+        Confirm-DataverseAuth -ConfigPath $ConfigPath
+        # If we get here, reauthentication succeeded — retry the failed script
+        Write-Host "`n--- $script (retry) ---" -ForegroundColor Yellow
+        pwsh -NoProfile -File $scriptPath -ConfigPath $ConfigPath
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "$script exited with code $LASTEXITCODE after retry. Aborting."
+            exit $LASTEXITCODE
+        }
+    } elseif ($LASTEXITCODE -ne 0) {
         Write-Error "$script exited with code $LASTEXITCODE. Aborting."
         exit $LASTEXITCODE
     }

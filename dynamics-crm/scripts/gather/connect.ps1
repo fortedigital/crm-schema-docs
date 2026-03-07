@@ -165,12 +165,77 @@ function Connect-Dataverse {
     Write-Host "Connected to $baseUrl" -ForegroundColor Green
 }
 
+# ── Public: validate that the current token is usable ────────────────────────
+function Test-DataverseAuth {
+    <#
+    .SYNOPSIS
+        Calls WhoAmI to verify the token is valid. Returns $true on success, $false on failure.
+    #>
+    if (-not $script:Connection -or -not $script:Connection.Token) {
+        Write-Warning "No Dataverse token available."
+        return $false
+    }
+    try {
+        $headers = @{
+            Authorization      = "Bearer $($script:Connection.Token)"
+            'OData-MaxVersion' = '4.0'
+            'OData-Version'    = '4.0'
+            Accept             = 'application/json'
+        }
+        $url = "$($script:Connection.EnvironmentUrl)/api/data/v9.2/WhoAmI"
+        $resp = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+        Write-Host "Token valid — UserId: $($resp.UserId)" -ForegroundColor Green
+        return $true
+    } catch {
+        $statusCode = $_.Exception.Response.StatusCode.value__
+        Write-Warning "Token validation failed (HTTP $statusCode): $($_.Exception.Message)"
+        return $false
+    }
+}
+
+# ── Auth-failure exit code (used by run-gather.ps1 to detect 401s) ───────────
+$script:AuthFailureExitCode = 91
+
+# ── Public: validate + prompt to reauthenticate if token is invalid ──────────
+function Confirm-DataverseAuth {
+    <#
+    .SYNOPSIS
+        Tests the current token. If invalid, prompts the user to reauthenticate.
+        Returns $true if auth is valid (or was refreshed), exits on decline.
+    #>
+    param(
+        [string]$ConfigPath = "$PSScriptRoot/config.json"
+    )
+
+    if (Test-DataverseAuth) { return $true }
+
+    Write-Host "`nAuthentication is invalid or expired." -ForegroundColor Red
+    $retry = Read-Host "Do you want to reauthenticate? (y/N)"
+    if ($retry -match '^[Yy]') {
+        # Clear stale token
+        $script:Connection = $null
+        Remove-Item Env:DATAVERSE_TOKEN -ErrorAction SilentlyContinue
+        Remove-Item Env:DATAVERSE_URL   -ErrorAction SilentlyContinue
+        Connect-Dataverse -ConfigPath $ConfigPath
+        if (Test-DataverseAuth) {
+            return $true
+        }
+        Write-Error "Reauthentication failed."
+        exit $script:AuthFailureExitCode
+    } else {
+        Write-Host "Aborting." -ForegroundColor Yellow
+        exit $script:AuthFailureExitCode
+    }
+}
+
 # ── Public: paginated GET against the Dataverse Web API ──────────────────────
 function Invoke-DataverseGet {
     <#
     .SYNOPSIS
         Issues a GET request against the Dataverse Web API, following all
         @odata.nextLink pages. Returns the combined value array.
+        Exits with code 91 on HTTP 401 (Unauthorized) so the caller can
+        detect auth failures and prompt for reauthentication.
     #>
     param(
         [Parameter(Mandatory)]
@@ -192,7 +257,16 @@ function Invoke-DataverseGet {
 
     do {
         Write-Host "GET $url" -ForegroundColor Yellow
-        $resp = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+        try {
+            $resp = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+        } catch {
+            $statusCode = $_.Exception.Response.StatusCode.value__
+            if ($statusCode -eq 401) {
+                Write-Error "HTTP 401 Unauthorized — token is invalid or expired."
+                exit $script:AuthFailureExitCode
+            }
+            throw
+        }
         if ($null -ne $resp.value) {
             $results.AddRange([object[]]$resp.value)
         } elseif ($results.Count -eq 0) {

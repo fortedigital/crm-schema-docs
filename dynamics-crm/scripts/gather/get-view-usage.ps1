@@ -40,6 +40,7 @@ foreach ($e in $entityDefs) {
 }
 
 Connect-Dataverse -ConfigPath $ConfigPath
+Confirm-DataverseAuth -ConfigPath $ConfigPath
 
 $total = $entityDefs.Count; $current = 0
 
