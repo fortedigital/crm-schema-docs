@@ -442,6 +442,8 @@ function Build-HtmlDocument {
     .legend-section p strong { font-family: monospace; }
     .legend-item { display: flex; align-items: baseline; gap: .5rem; margin: .35rem 0; font-size: 0.85em; }
     .legend-item > span:first-child { flex-shrink: 0; }
+    /* Entity group headings */
+    .entity-group-heading { margin: 2rem 0 .5rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); font-size: 1em; color: #656d76; }
   </style>
 </head>
 <body>
@@ -550,14 +552,34 @@ function Build-HtmlDocument {
 
     $doc.AppendLine('      <h4><a href="#migration-complexity">Migration Complexity</a></h4>') | Out-Null
     $doc.AppendLine('      <h4>Entity Definitions</h4>') | Out-Null
-    $doc.AppendLine('      <ul>') | Out-Null
-    foreach ($entity in $EntityList) {
+    # TOC entity links grouped by status, alphabetically within each group
+    $tocStatusOrder = @('active', 'low-activity', 'legacy', 'unknown')
+    $tocGrouped = $EntityList |
+        Sort-Object @(
+            { $cls = if ($Insights.ContainsKey($_)) { $Insights[$_].usageClassification ?? 'unknown' } else { 'unknown' }
+              $tocStatusOrder.IndexOf($cls) -ge 0 ? $tocStatusOrder.IndexOf($cls) : 99 },
+            { $_ }
+        )
+    $tocCurrentGroup = $null
+    foreach ($entity in $tocGrouped) {
         $csvFile = Join-Path $entitiesDir "$entity.csv"
-        if (Test-Path $csvFile) {
-            $doc.AppendLine("        <li><a href=`"#entity-$entity`">$([System.Net.WebUtility]::HtmlEncode($entity))</a></li>") | Out-Null
+        if (-not (Test-Path $csvFile)) { continue }
+        $tocCls = if ($Insights.ContainsKey($entity)) { $Insights[$entity].usageClassification ?? 'unknown' } else { 'unknown' }
+        if ($tocCls -ne $tocCurrentGroup) {
+            if ($tocCurrentGroup -ne $null) { $doc.AppendLine('      </ul>') | Out-Null }
+            $tocCurrentGroup = $tocCls
+            $tocLabel = switch ($tocCls) {
+                'active'       { 'Active' }
+                'low-activity' { 'Low Activity' }
+                'legacy'       { 'Legacy' }
+                default        { 'Unknown' }
+            }
+            $doc.AppendLine("      <p style=`"margin:.6rem 0 .2rem;font-size:.8em;font-weight:600;color:#656d76;text-transform:uppercase;letter-spacing:.05em`">$tocLabel</p>") | Out-Null
+            $doc.AppendLine('      <ul>') | Out-Null
         }
+        $doc.AppendLine("        <li><a href=`"#entity-$entity`">$([System.Net.WebUtility]::HtmlEncode($entity))</a></li>") | Out-Null
     }
-    $doc.AppendLine('      </ul>') | Out-Null
+    if ($tocCurrentGroup -ne $null) { $doc.AppendLine('      </ul>') | Out-Null }
     $doc.AppendLine('    </details>') | Out-Null
     $doc.AppendLine('  </nav>') | Out-Null
 
@@ -617,7 +639,18 @@ function Build-HtmlDocument {
 
     $doc.AppendLine('  <div class="entity-section">') | Out-Null
 
-    foreach ($entity in $EntityList) {
+    # Group by status, then alphabetically within each group
+    $statusOrder = @('active', 'low-activity', 'legacy', 'unknown')
+    $groupedEntities = $EntityList |
+        Sort-Object @(
+            { $cls = if ($Insights.ContainsKey($_)) { $Insights[$_].usageClassification ?? 'unknown' } else { 'unknown' }
+              $statusOrder.IndexOf($cls) -ge 0 ? $statusOrder.IndexOf($cls) : 99 },
+            { $_ }
+        )
+
+    $currentGroup = $null
+
+    foreach ($entity in $groupedEntities) {
         $csvFile = Join-Path $entitiesDir "$entity.csv"
         if (-not (Test-Path $csvFile)) {
             Write-Warning "$entity.csv not found, skipping"
@@ -628,6 +661,24 @@ function Build-HtmlDocument {
         $ei = if ($Insights.ContainsKey($entity)) { $Insights[$entity] } else { $null }
         $classification = if ($ei) { $ei.usageClassification } else { 'unknown' }
         $classification = $classification ?? 'unknown'
+
+        # Emit group header when status changes
+        if ($classification -ne $currentGroup) {
+            $currentGroup = $classification
+            $groupLabel = switch ($classification) {
+                'active'       { 'Active' }
+                'low-activity' { 'Low Activity' }
+                'legacy'       { 'Legacy' }
+                default        { 'Unknown' }
+            }
+            $groupBadgeClass = switch ($classification) {
+                'active'       { 'badge-active' }
+                'low-activity' { 'badge-low' }
+                'legacy'       { 'badge-legacy' }
+                default        { 'badge-unknown' }
+            }
+            $doc.AppendLine("  <h3 class=`"entity-group-heading`"><span class=`"badge $groupBadgeClass`">$groupLabel</span></h3>") | Out-Null
+        }
         $badgeClass = switch ($classification) {
             'active'       { 'badge-active' }
             'low-activity' { 'badge-low' }
