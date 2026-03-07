@@ -13,6 +13,8 @@
     filter    Fetches entities matching a raw OData filter string on EntityDefinitions.
               Set entitySource.filter, e.g.: "IsCustomEntity eq true and IsValidForAdvancedFind eq true"
 
+    all       Fetches every entity in the environment (no filter). Useful for discovery.
+
 .OUTPUTS
     data/raw/entities.json — array of entity definition objects.
     All downstream gather/clean/generate scripts derive their entity list from this file.
@@ -31,6 +33,10 @@ $outDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.output.rawDir)
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
 Connect-Dataverse -ConfigPath $ConfigPath
+
+# Quick access check — call WhoAmI to verify the token works
+$whoAmI = Invoke-DataverseGet "WhoAmI"
+Write-Host "Authenticated as UserId: $($whoAmI.UserId) | OrgId: $($whoAmI.OrganizationId)" -ForegroundColor Green
 
 $select = @(
     'MetadataId'
@@ -62,7 +68,13 @@ $entities = switch ($mode) {
         # Resolve solution → solutionid
         $sol = Invoke-DataverseGet "solutions?`$select=solutionid,uniquename&`$filter=uniquename eq '$solName'"
         if (-not $sol) {
-            Write-Error "Solution '$solName' not found in this environment."
+            Write-Warning "Solution '$solName' not found. Listing all solutions in this environment:"
+            $allSolutions = Invoke-DataverseGet "solutions?`$select=uniquename,friendlyname,ismanaged&`$orderby=uniquename"
+            $allSolutions | ForEach-Object {
+                $managed = if ($_.ismanaged) { 'managed' } else { 'unmanaged' }
+                Write-Host "  $($_.uniquename)  ($($_.friendlyname), $managed)" -ForegroundColor DarkGray
+            }
+            Write-Error "Update entitySource.solution in config.json to one of the above."
             exit 1
         }
         $solId = $sol[0].solutionid
@@ -98,8 +110,12 @@ $entities = switch ($mode) {
         Invoke-DataverseGet "EntityDefinitions?`$select=$select&`$filter=$f"
     }
 
+    'all' {
+        Invoke-DataverseGet "EntityDefinitions?`$select=$select"
+    }
+
     default {
-        Write-Error "Unknown entitySource.mode '$mode'. Valid values: solution, custom, filter."
+        Write-Error "Unknown entitySource.mode '$mode'. Valid values: solution, custom, filter, all."
         exit 1
     }
 }

@@ -1,3 +1,7 @@
 # Data extracted/transformed from CRM environments — never commit
 dynamics-crm/data/
 salesforce/data/
+
+# Generated output
+dynamics-crm/output/
+salesforce/output/

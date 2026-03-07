@@ -3,23 +3,28 @@
     "url": "https://oras.crm4.dynamics.com",
     "tenantId": "28f7c299-dac2-470f-8777-5c2d939ca7bd",
     "authMode": "Interactive",
-    "clientId": "51f81489-12ee-4a9e-aaae-a2591f45987d"
+    "clientId": "51f81489-12ee-4a9e-aaae-a2591f45987d",
+    "loginHint": "ext-thomas.solbjor@orasgroup.com"
   },
   "entitySource": {
-    "mode": "solution",
-    "solution": "Orasgroup",
+    "mode": "all",
+    "solution": "OrasCrm",
     "filter": ""
   },
   "diagrams": {
-    "core-entities":  ["account", "contact", "lead", "opportunity"],
-    "sales-process":  ["opportunity", "quote", "quotedetail", "salesorder", "salesorderdetail", "invoice", "invoicedetail", "product"],
-    "activities":     ["account", "contact", "activitypointer", "email", "phonecall", "task", "appointment", "activityparty"],
-    "service":        ["account", "contact", "activitypointer", "incident", "knowledgearticle", "subject"]
+    "ifa-customer-master":    ["account", "contact", "ifa_group", "ifa_chain", "ifa_segments", "ifa_customerfacility", "ifa_customerprogram", "ifa_customervolumeinformation", "ifa_externalkey", "ifa_hansaplus"],
+    "ifa-sales-pipeline":     ["account", "contact", "lead", "opportunity", "ifa_salesterritory", "ifa_marketcultivation", "ifa_visitsbyabcandchannel", "ifa_salesaction"],
+    "ifa-dsb-sales":          ["account", "contact", "opportunity", "ifa_dsblead", "ifa_dsbopportunity"],
+    "ifa-products-showroom":  ["account", "competitor", "ifa_product", "ifa_productfamily", "ifa_showroom", "ifa_showroomdisplay", "ifa_marketingmaterial"],
+    "ifa-lettershop":         ["account", "contact", "ifa_lettershoporder", "ifa_lettershoporderdetail", "ifa_lettershopproduct"],
+    "ifa-service":            ["account", "contact", "incident", "ifa_service_at", "ifa_aquapunkt", "ifa_casecontact", "ifa_information"],
+    "core-entities":          ["account", "contact", "lead", "leadaddress", "opportunity", "competitor", "incident"],
+    "all-entities":           ["*"]
   },
   "output": {
     "rawDir":      "../../data/raw",
     "cleanDir":    "../../data/clean",
-    "diagramsDir": "../../diagrams",
-    "entitiesDir": "../../entities"
+    "diagramsDir": "../../output/diagrams",
+    "entitiesDir": "../../output/entities"
   }
 }

@@ -42,7 +42,7 @@ $objectNames = (Get-Content $objectsFile -Raw | ConvertFrom-Json) |
                ForEach-Object { $_.apiName }
 
 if (-not $OutputPath) {
-    $OutputPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../salesforce-object-reference.md'))
+    $OutputPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../output/salesforce-object-reference.md'))
 }
 
 $renderedDir = Join-Path ([IO.Path]::GetDirectoryName($OutputPath)) 'diagrams-rendered'

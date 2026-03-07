@@ -42,7 +42,7 @@ $entityNames = (Get-Content $entitiesFile -Raw | ConvertFrom-Json) |
                ForEach-Object { $_.logicalName ?? $_.LogicalName }
 
 if (-not $OutputPath) {
-    $OutputPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../dynamics-crm-entity-reference.md'))
+    $OutputPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../output/dynamics-crm-entity-reference.md'))
 }
 
 $renderedDir = Join-Path ([IO.Path]::GetDirectoryName($OutputPath)) 'diagrams-rendered'

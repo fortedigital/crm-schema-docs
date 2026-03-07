@@ -24,6 +24,7 @@ $scripts = @(
     'clean-entities.ps1'
     'clean-attributes.ps1'
     'clean-relationships.ps1'
+    'clean-operational-insights.ps1'
 )
 
 foreach ($script in $scripts) {

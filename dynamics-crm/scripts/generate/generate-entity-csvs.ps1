@@ -83,7 +83,7 @@ foreach ($entity in $entityNames) {
             ConvertTo-CsvField $a.displayName
             ConvertTo-CsvField $a.type
             ConvertTo-CsvField $a.required
-            ConvertTo-CsvField (if ($a.isCustom) { 'yes' } else { 'no' })
+            ConvertTo-CsvField $(if ($a.isCustom) { 'yes' } else { 'no' })
             ConvertTo-CsvField ($a.viewUsage ?? 0)
             ConvertTo-CsvField ($existing?.bu_usage ?? '')
             ConvertTo-CsvField ($existing?.comment  ?? '')

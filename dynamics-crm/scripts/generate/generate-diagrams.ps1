@@ -29,7 +29,7 @@ function Get-RelLabel($schemaName, $entity1, $entity2) {
     # Strip leading entity name(s) from schema name, replace underscores with spaces
     $label = $schemaName -replace "(?i)^${entity1}_?", '' -replace "(?i)^${entity2}_?", ''
     $label = $label -replace '_', ' '
-    return if ($label.Trim()) { $label.Trim().ToLower() } else { $schemaName.ToLower() }
+    return $(if ($label.Trim()) { $label.Trim().ToLower() } else { $schemaName.ToLower() })
 }
 
 function Get-DiagramTitle($name) {
@@ -40,18 +40,37 @@ function Get-DiagramTitle($name) {
     }) -join ' '
 }
 
+# ── Collect all entities from relationship data (for wildcard support) ────────
+$allEntities = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+foreach ($r in $allRels) {
+    if ($r.type -eq 'OneToMany') {
+        $allEntities.Add($r.referencedEntity)  | Out-Null
+        $allEntities.Add($r.referencingEntity) | Out-Null
+    } elseif ($r.type -eq 'ManyToMany') {
+        $allEntities.Add($r.entity1) | Out-Null
+        $allEntities.Add($r.entity2) | Out-Null
+    }
+}
+
 # ── Generate one file per diagram group ──────────────────────────────────────
 foreach ($diagramName in $config.diagrams.PSObject.Properties.Name) {
-    $groupEntities = [System.Collections.Generic.HashSet[string]]($config.diagrams.$diagramName)
+    $configList = [string[]]$config.diagrams.$diagramName
+    if ($configList.Count -eq 1 -and $configList[0] -eq '*') {
+        $groupEntities = [System.Collections.Generic.HashSet[string]]::new($allEntities, [StringComparer]::OrdinalIgnoreCase)
+    } else {
+        $groupEntities = [System.Collections.Generic.HashSet[string]]::new($configList)
+    }
 
     # Filter relationships where both sides are in this diagram's entity set
-    $rels = $allRels | Where-Object {
-        switch ($_.type) {
-            'OneToMany'  { $groupEntities.Contains($_.referencedEntity) -and $groupEntities.Contains($_.referencingEntity) }
-            'ManyToMany' { $groupEntities.Contains($_.entity1) -and $groupEntities.Contains($_.entity2) }
-            default      { $false }
+    $rels = @($allRels | Where-Object {
+        if ($_.type -eq 'OneToMany') {
+            $groupEntities.Contains($_.referencedEntity) -and $groupEntities.Contains($_.referencingEntity)
+        } elseif ($_.type -eq 'ManyToMany') {
+            $groupEntities.Contains($_.entity1) -and $groupEntities.Contains($_.entity2)
+        } else {
+            $false
         }
-    }
+    })
 
     # Pad entity names for column alignment
     $maxLen = ($groupEntities | Measure-Object -Property Length -Maximum).Maximum

@@ -24,6 +24,7 @@ $scripts = @(
     'generate-diagrams.ps1'
     'generate-entity-csvs.ps1'
     'generate-md.ps1'
+    'generate-html.ps1'
 )
 
 foreach ($script in $scripts) {

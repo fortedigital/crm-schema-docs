@@ -71,33 +71,85 @@ function Connect-Dataverse {
             client_secret = $clientSecret
             scope         = $scope
         }
+        Write-Host "POST $tokenEndpoint" -ForegroundColor Yellow
+        Write-Host "Body: $($body | ConvertTo-Json -Compress)" -ForegroundColor Yellow
         $resp = Invoke-RestMethod -Method Post -Uri $tokenEndpoint -Body $body
     }
     else {
-        # Device-code (interactive)
-        $deviceResp = Invoke-RestMethod -Method Post `
-            -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/devicecode" `
-            -Body @{ client_id = $env_cfg.clientId; scope = $scope }
+        # Authorization-code + PKCE (interactive)
+        $redirectPort = 8400
+        $redirectUri  = "http://localhost:$redirectPort"
 
-        Write-Host "`n$($deviceResp.message)`n" -ForegroundColor Cyan
+        # Generate PKCE code verifier + challenge
+        $verifierBytes = [byte[]]::new(32)
+        [System.Security.Cryptography.RandomNumberGenerator]::Fill($verifierBytes)
+        $codeVerifier  = [Convert]::ToBase64String($verifierBytes) -replace '\+','-' -replace '/','_' -replace '='
+        $challengeHash = [System.Security.Cryptography.SHA256]::HashData(
+            [System.Text.Encoding]::ASCII.GetBytes($codeVerifier))
+        $codeChallenge = [Convert]::ToBase64String($challengeHash) -replace '\+','-' -replace '/','_' -replace '='
 
-        $pollBody = @{
-            grant_type  = 'urn:ietf:params:oauth2:grant-type:device_code'
-            client_id   = $env_cfg.clientId
-            device_code = $deviceResp.device_code
+        $state = [guid]::NewGuid().ToString('N')
+
+        $authParams = @(
+            "client_id=$($env_cfg.clientId)"
+            "response_type=code"
+            "redirect_uri=$([uri]::EscapeDataString($redirectUri))"
+            "scope=$([uri]::EscapeDataString($scope + ' offline_access openid'))"
+            "state=$state"
+            "code_challenge=$codeChallenge"
+            "code_challenge_method=S256"
+        )
+        if ($env_cfg.loginHint) {
+            $authParams += "login_hint=$([uri]::EscapeDataString($env_cfg.loginHint))"
         }
-        $interval = [int]($deviceResp.interval ?? 5)
+        $authUrl = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize?" + ($authParams -join '&')
 
-        $resp = $null
-        do {
-            Start-Sleep -Seconds $interval
-            try {
-                $resp = Invoke-RestMethod -Method Post -Uri $tokenEndpoint -Body $pollBody -ErrorAction Stop
-            } catch {
-                $err = ($_.ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue).error
-                if ($err -ne 'authorization_pending') { throw }
-            }
-        } while (-not $resp)
+        # Start a one-shot HTTP listener to capture the redirect
+        $listener = [System.Net.HttpListener]::new()
+        $listener.Prefixes.Add("$redirectUri/")
+        $listener.Start()
+
+        Write-Host "Opening browser for sign-in…" -ForegroundColor Cyan
+        Write-Host "GET $authUrl" -ForegroundColor Yellow
+
+        # Open browser (cross-platform)
+        if     ($IsWindows) { Start-Process $authUrl }
+        elseif ($IsMacOS)   { Start-Process 'open' -ArgumentList $authUrl }
+        else                { Start-Process 'xdg-open' -ArgumentList $authUrl }
+
+        Write-Host "Waiting for authentication redirect on $redirectUri …" -ForegroundColor DarkGray
+        $ctx = $listener.GetContext()          # blocks until the browser redirects
+
+        # Send a friendly page back to the browser, then close the listener
+        $html = [System.Text.Encoding]::UTF8.GetBytes(
+            '<html><body><h3>Authentication complete — you can close this tab.</h3></body></html>')
+        $ctx.Response.ContentType = 'text/html'
+        $ctx.Response.OutputStream.Write($html, 0, $html.Length)
+        $ctx.Response.Close()
+        $listener.Stop()
+
+        # Parse the authorization code from the query string
+        $qs = [System.Web.HttpUtility]::ParseQueryString($ctx.Request.Url.Query)
+        if ($qs['error']) {
+            throw "Authorization failed: $($qs['error']) — $($qs['error_description'])"
+        }
+        if ($qs['state'] -ne $state) {
+            throw "State mismatch — possible CSRF. Expected $state, got $($qs['state'])"
+        }
+        $authCode = $qs['code']
+
+        # Exchange the code for tokens
+        $body = @{
+            grant_type    = 'authorization_code'
+            client_id     = $env_cfg.clientId
+            code          = $authCode
+            redirect_uri  = $redirectUri
+            code_verifier = $codeVerifier
+            scope         = $scope
+        }
+        Write-Host "POST $tokenEndpoint" -ForegroundColor Yellow
+        Write-Host "Body: $($body | ConvertTo-Json -Compress)" -ForegroundColor Yellow
+        $resp = Invoke-RestMethod -Method Post -Uri $tokenEndpoint -Body $body
     }
 
     $script:Connection = @{
@@ -139,8 +191,14 @@ function Invoke-DataverseGet {
     $results = [System.Collections.Generic.List[object]]::new()
 
     do {
+        Write-Host "GET $url" -ForegroundColor Yellow
         $resp = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
-        if ($resp.value) { $results.AddRange([object[]]$resp.value) }
+        if ($null -ne $resp.value) {
+            $results.AddRange([object[]]$resp.value)
+        } elseif ($results.Count -eq 0) {
+            # Non-collection response (e.g. WhoAmI, single-entity lookup)
+            return $resp
+        }
         $url = $resp.'@odata.nextLink'
     } while ($url)
 

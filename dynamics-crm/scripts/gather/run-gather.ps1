@@ -30,12 +30,21 @@ Write-Host "=== Dynamics 365 data gather — $(Get-Date -Format 'yyyy-MM-dd HH:m
 Connect-Dataverse -ConfigPath $ConfigPath
 # $env:DATAVERSE_TOKEN and $env:DATAVERSE_URL are now set for child processes
 
+# ── 2. Clean raw output directory ────────────────────────────────────────────
+$config = Get-Content $ConfigPath -Raw | ConvertFrom-Json
+$rawDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.output.rawDir))
+if (Test-Path $rawDir) {
+    Remove-Item "$rawDir/*" -Recurse -Force
+    Write-Host "Cleared $rawDir" -ForegroundColor DarkGray
+}
+
 # ── 3. Run gather scripts ──────────────────────────────────────────────────────
 $scripts = @(
-    'get-entities.ps1'        # must run first — get-view-usage depends on its output
+    'get-entities.ps1'              # must run first — downstream scripts depend on its output
     'get-attributes.ps1'
     'get-relationships.ps1'
     'get-view-usage.ps1'
+    'get-operational-insights.ps1'  # must run after entities + relationships
 )
 
 foreach ($script in $scripts) {
@@ -50,8 +59,6 @@ foreach ($script in $scripts) {
 
 # ── 4. Summary ────────────────────────────────────────────────────────────────
 $elapsed = (Get-Date) - $start
-$config  = Get-Content $ConfigPath -Raw | ConvertFrom-Json
-$rawDir  = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $config.output.rawDir))
 
 $files = Get-ChildItem $rawDir -Recurse -File -Filter '*.json'
 Write-Host "`n=== Done in $([int]$elapsed.TotalSeconds)s — $($files.Count) files in $rawDir ===" -ForegroundColor Cyan

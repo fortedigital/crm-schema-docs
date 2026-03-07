@@ -12,7 +12,7 @@ scripts/gather/   →   data/raw/   →   scripts/clean/   →   scripts/generat
 
 The [`sample/`](./sample/) directory contains placeholder output generated against a standard Dynamics 365 Sales and Service demo environment. It illustrates the pipeline output format but is **not** an export from any real environment.
 
-Run the pipeline against your own Dataverse environment to generate actual output in `diagrams/`, `entities/`, and `dynamics-crm-entity-reference.md`.
+Run the pipeline against your own Dataverse environment to generate actual output in the `output/` directory.
 
 ## Prerequisites
 
@@ -83,10 +83,12 @@ data/clean/                            ← gitignored
   relationships.json
     │
     ▼  scripts/generate/
-diagrams/*.mmd                         ← committed  (Mermaid source)
-diagrams-rendered/*.png                ← committed  (rendered by mmdc)
-entities/*.csv                         ← committed  (bu_usage / comment: fill manually)
-dynamics-crm-entity-reference.md       ← committed  (full reference document)
+output/                                ← gitignored
+  diagrams/*.mmd                       (Mermaid source)
+  diagrams-rendered/*.png              (rendered by mmdc)
+  entities/*.csv                       (bu_usage / comment: fill manually)
+  dynamics-crm-entity-reference.md     (full reference document)
+  dynamics-crm-entity-reference.html   (self-contained HTML with client-side Mermaid)
 ```
 
 `mmdc` (Mermaid CLI) is required for the generate stage: `npm install -g @mermaid-js/mermaid-cli`

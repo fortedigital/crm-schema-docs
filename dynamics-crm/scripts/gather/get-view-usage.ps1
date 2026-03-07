@@ -52,7 +52,7 @@ foreach ($entity in ($entityDefs | ForEach-Object { $_.LogicalName ?? $_.logical
         continue
     }
 
-    $url   = "savedqueries?`$select=name,layoutxml&`$filter=returnedtypecode eq $typeCode"
+    $url   = "savedqueries?`$select=name,layoutxml&`$filter=returnedtypecode eq '$entity'"
     $views = Invoke-DataverseGet -RelativeUrl $url
 
     # Parse layoutxml and count field column occurrences across all views
