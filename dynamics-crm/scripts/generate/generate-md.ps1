@@ -41,6 +41,28 @@ if (-not (Test-Path $entitiesFile)) {
 $entityNames = (Get-Content $entitiesFile -Raw | ConvertFrom-Json) |
                ForEach-Object { $_.logicalName ?? $_.LogicalName }
 
+# ── Load operational insights ────────────────────────────────────────────────
+$insightsFile = Join-Path $cleanDir 'operational-insights.json'
+$insights = @{}
+$insightsSummary = $null
+if (Test-Path $insightsFile) {
+    $insightsRaw = Get-Content $insightsFile -Raw | ConvertFrom-Json
+    $insightsSummary = $insightsRaw.summary
+    foreach ($e in $insightsRaw.entities) {
+        $insights[$e.entity] = $e
+    }
+    Write-Host "Loaded operational insights for $($insights.Count) entities" -ForegroundColor Cyan
+}
+
+# Filter out empty entities
+if ($insights.Count -gt 0) {
+    $entityNames = @($entityNames | Where-Object {
+        $cls = if ($insights.ContainsKey($_)) { $insights[$_].usageClassification } else { 'unknown' }
+        $cls -ne 'empty'
+    })
+    Write-Host "After filtering empty: $($entityNames.Count) entities" -ForegroundColor Cyan
+}
+
 if (-not $OutputPath) {
     $OutputPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../output/dynamics-crm-entity-reference.md'))
 }
@@ -106,6 +128,47 @@ $doc.AppendLine("_Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm')_") | Out-Nul
 $doc.AppendLine("")                                                 | Out-Null
 $doc.AppendLine("---")                                              | Out-Null
 
+# ── Operational Overview ──────────────────────────────────────────────────────
+if ($insightsSummary) {
+    $doc.AppendLine("")                              | Out-Null
+    $doc.AppendLine("## Operational Overview")       | Out-Null
+    $doc.AppendLine("")                              | Out-Null
+    $doc.AppendLine("| Classification | Count |")    | Out-Null
+    $doc.AppendLine("|---|---|")                      | Out-Null
+    $doc.AppendLine("| Active | $($insightsSummary.activeEntities) |")          | Out-Null
+    $doc.AppendLine("| Low Activity | $($insightsSummary.lowActivityEntities) |") | Out-Null
+    $doc.AppendLine("| Legacy | $($insightsSummary.legacyEntities) |")          | Out-Null
+    $doc.AppendLine("| Empty (excluded) | $($insightsSummary.emptyEntities) |") | Out-Null
+    $doc.AppendLine("")                              | Out-Null
+
+    # Domain summaries
+    $nonSummaryGroups = @('system-administration', 'all-entities')
+    $domainRows = @()
+    foreach ($gName in $config.diagrams.PSObject.Properties.Name) {
+        if ($gName -in $nonSummaryGroups) { continue }
+        $gEntities = @($config.diagrams.$gName | Where-Object { $_ -ne '*' })
+        $found  = @($gEntities | Where-Object { $insights.ContainsKey($_) })
+        $data   = @($found | ForEach-Object { $insights[$_] })
+        $totalRows = ($data | Measure-Object -Property rowCount -Sum).Sum
+        $active    = @($data | Where-Object { $_.usageClassification -eq 'active' }).Count
+        $legacy    = @($data | Where-Object { $_.usageClassification -eq 'legacy' }).Count
+        $plugins   = ($data | ForEach-Object { $_.transformations.pluginStepTotal } | Measure-Object -Sum).Sum
+        $workflows = ($data | ForEach-Object { $_.transformations.workflowTotal } | Measure-Object -Sum).Sum
+        $label = ($gName -replace '-', ' ')
+        $domainRows += "| $label | $($found.Count) | $([long]($totalRows ?? 0)) | $active | $legacy | $($plugins ?? 0) | $($workflows ?? 0) |"
+    }
+    if ($domainRows.Count -gt 0) {
+        $doc.AppendLine("### Domain Summary")                                                     | Out-Null
+        $doc.AppendLine("")                                                                        | Out-Null
+        $doc.AppendLine("| Domain | Entities | Rows | Active | Legacy | Plugins | Workflows |")   | Out-Null
+        $doc.AppendLine("|---|---|---|---|---|---|---|")                                             | Out-Null
+        foreach ($row in $domainRows) { $doc.AppendLine($row) | Out-Null }
+        $doc.AppendLine("")                                                                        | Out-Null
+    }
+
+    $doc.AppendLine("---") | Out-Null
+}
+
 # ── Section 1: Diagrams ───────────────────────────────────────────────────────
 $doc.AppendLine("")             | Out-Null
 $doc.AppendLine("## Diagrams")  | Out-Null
@@ -143,8 +206,20 @@ foreach ($entity in $entityNames) {
         continue
     }
 
+    $ei = if ($insights.ContainsKey($entity)) { $insights[$entity] } else { $null }
+    $cls = if ($ei) { $ei.usageClassification } else { 'unknown' }
+    $cls = $cls ?? 'unknown'
+    $statusIcon = switch ($cls) {
+        'active'       { '🟢' }
+        'low-activity' { '🟡' }
+        'legacy'       { '🔴' }
+        default        { '⚪' }
+    }
+    $rowInfo = if ($ei -and $ei.rowCount) { " — $($ei.rowCount.ToString('N0')) rows" } else { '' }
+    $heading = "$entity $statusIcon ``$cls``$rowInfo"
+
     $doc.AppendLine("")              | Out-Null
-    $doc.AppendLine("### $entity")   | Out-Null
+    $doc.AppendLine("### $heading")  | Out-Null
     $doc.AppendLine("")              | Out-Null
     $doc.AppendLine((ConvertTo-MdTable $csvFile)) | Out-Null
     Write-Host "Table: $entity" -ForegroundColor DarkGray

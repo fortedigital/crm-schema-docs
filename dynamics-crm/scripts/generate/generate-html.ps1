@@ -53,6 +53,52 @@ $systemEntities  = @($entityNames | Where-Object { -not $businessEntities.Contai
 
 Write-Host "Entity classification: $($primaryEntities.Count) business, $($systemEntities.Count) system" -ForegroundColor Cyan
 
+# ── Load operational insights ────────────────────────────────────────────────
+$insightsFile = Join-Path $cleanDir 'operational-insights.json'
+$insights = @{}
+$insightsSummary = $null
+if (Test-Path $insightsFile) {
+    $insightsRaw = Get-Content $insightsFile -Raw | ConvertFrom-Json
+    $insightsSummary = $insightsRaw.summary
+    foreach ($e in $insightsRaw.entities) {
+        $insights[$e.entity] = $e
+    }
+    Write-Host "Loaded operational insights for $($insights.Count) entities" -ForegroundColor Cyan
+}
+
+# Filter out empty entities
+if ($insights.Count -gt 0) {
+    $primaryEntities = @($primaryEntities | Where-Object {
+        $cls = if ($insights.ContainsKey($_)) { $insights[$_].usageClassification } else { 'unknown' }
+        $cls -ne 'empty'
+    })
+    $systemEntities = @($systemEntities | Where-Object {
+        $cls = if ($insights.ContainsKey($_)) { $insights[$_].usageClassification } else { 'unknown' }
+        $cls -ne 'empty'
+    })
+    Write-Host "After filtering empty: $($primaryEntities.Count) business, $($systemEntities.Count) system" -ForegroundColor Cyan
+}
+
+# ── Domain summary helper ────────────────────────────────────────────────────
+function Get-DomainSummary($groupName, [string[]]$groupEntities, [hashtable]$insightsMap) {
+    $found  = @($groupEntities | Where-Object { $insightsMap.ContainsKey($_) })
+    $data   = @($found | ForEach-Object { $insightsMap[$_] })
+    $total  = ($data | Measure-Object -Property rowCount -Sum).Sum
+    $pluginSum   = ($data | ForEach-Object { $_.transformations.pluginStepTotal } | Measure-Object -Sum).Sum
+    $workflowSum = ($data | ForEach-Object { $_.transformations.workflowTotal }   | Measure-Object -Sum).Sum
+    [PSCustomObject]@{
+        Domain      = ($groupName -replace '-', ' ')
+        EntityCount = $found.Count
+        TotalRows   = [long]($total ?? 0)
+        Active      = @($data | Where-Object { $_.usageClassification -eq 'active' }).Count
+        LowActivity = @($data | Where-Object { $_.usageClassification -eq 'low-activity' }).Count
+        Legacy      = @($data | Where-Object { $_.usageClassification -eq 'legacy' }).Count
+        Empty       = @($data | Where-Object { $_.usageClassification -eq 'empty' }).Count
+        PluginSteps = [int]($pluginSum ?? 0)
+        Workflows   = [int]($workflowSum ?? 0)
+    }
+}
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 function ConvertTo-HtmlCell($value) {
     return [System.Net.WebUtility]::HtmlEncode(([string]$value).Trim())
@@ -111,7 +157,10 @@ function Build-HtmlDocument {
         [string]$Subtitle,
         [string[]]$EntityList,
         [System.IO.FileInfo[]]$Diagrams,
-        [string]$CrossLinkHtml
+        [string]$CrossLinkHtml,
+        [hashtable]$Insights = @{},
+        [PSCustomObject]$InsightsSummary = $null,
+        [PSCustomObject[]]$DomainSummaries = @()
     )
 
     $doc = [System.Text.StringBuilder]::new()
@@ -213,6 +262,29 @@ function Build-HtmlDocument {
     .entity-section details summary { cursor: pointer; padding: .6rem 1rem; background: var(--header-bg); font-weight: 600; border-radius: 6px; }
     .entity-section details[open] summary { border-bottom: 1px solid var(--border); border-radius: 6px 6px 0 0; }
     .entity-section details .table-wrap { overflow-x: auto; padding: .5rem; }
+
+    /* Operational insight badges */
+    .badge { display: inline-block; font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: 600; margin-left: 0.5em; vertical-align: middle; }
+    .badge-active     { background: #dafbe1; color: #1a7f37; }
+    .badge-low        { background: #fff8c5; color: #9a6700; }
+    .badge-legacy     { background: #ffebe9; color: #cf222e; }
+    .badge-unknown    { background: #eaeef2; color: #656d76; }
+    @media (prefers-color-scheme: dark) {
+      .badge-active   { background: #1a3d27; color: #7ee787; }
+      .badge-low      { background: #3d2e00; color: #e3b341; }
+      .badge-legacy   { background: #3d1418; color: #f85149; }
+      .badge-unknown  { background: #21262d; color: #8b949e; }
+    }
+
+    /* Stats bar */
+    .stats-bar  { display: flex; gap: 1rem; margin: 1.5rem 0; flex-wrap: wrap; }
+    .stat       { flex: 1; min-width: 120px; text-align: center; padding: 1rem;
+                  border: 1px solid var(--border); border-radius: 8px; background: var(--section-bg); }
+    .stat-value { display: block; font-size: 2em; font-weight: 700; }
+    .stat-label { display: block; font-size: 0.85em; color: #656d76; margin-top: .2em; }
+
+    /* Domain summary table */
+    .domain-summary { margin: 1.5rem 0; }
   </style>
 </head>
 <body>
@@ -228,10 +300,33 @@ function Build-HtmlDocument {
         $doc.AppendLine("  <div class=`"cross-link`">$CrossLinkHtml</div>") | Out-Null
     }
 
-    # ── Table of Contents ────────────────────────────────────────────────────
+    # ── Operational Overview ─────────────────────────────────────────────
+    if ($InsightsSummary) {
+        $doc.AppendLine('  <h2 id="operational-overview">Operational Overview</h2>') | Out-Null
+        $doc.AppendLine('  <div class="stats-bar">') | Out-Null
+        $doc.AppendLine("    <div class=`"stat`"><span class=`"stat-value`">$($InsightsSummary.activeEntities)</span><span class=`"stat-label`">Active</span></div>") | Out-Null
+        $doc.AppendLine("    <div class=`"stat`"><span class=`"stat-value`">$($InsightsSummary.lowActivityEntities)</span><span class=`"stat-label`">Low Activity</span></div>") | Out-Null
+        $doc.AppendLine("    <div class=`"stat`"><span class=`"stat-value`">$($InsightsSummary.legacyEntities)</span><span class=`"stat-label`">Legacy</span></div>") | Out-Null
+        $doc.AppendLine("    <div class=`"stat`"><span class=`"stat-value`">$($InsightsSummary.emptyEntities)</span><span class=`"stat-label`">Empty (excluded)</span></div>") | Out-Null
+        $doc.AppendLine('  </div>') | Out-Null
+
+        if ($DomainSummaries.Count -gt 0) {
+            $doc.AppendLine('  <div class="domain-summary">') | Out-Null
+            $doc.AppendLine('  <h3>Domain Summary</h3>') | Out-Null
+            $dHeaders = @('Domain','EntityCount','TotalRows','Active','LowActivity','Legacy','Empty','PluginSteps','Workflows')
+            $doc.AppendLine((ConvertTo-SortableTable $DomainSummaries $dHeaders)) | Out-Null
+            $doc.AppendLine('  </div>') | Out-Null
+        }
+    }
+
+    # ── Table of Contents ────────────────────────────────────────────────
     $doc.AppendLine('  <nav>') | Out-Null
     $doc.AppendLine('    <details open>') | Out-Null
     $doc.AppendLine('      <summary>Table of Contents</summary>') | Out-Null
+
+    if ($InsightsSummary) {
+        $doc.AppendLine('      <h4><a href="#operational-overview">Operational Overview</a></h4>') | Out-Null
+    }
 
     if ($Diagrams -and $Diagrams.Count -gt 0) {
         $doc.AppendLine('      <h4>Diagrams</h4>') | Out-Null
@@ -287,11 +382,29 @@ function Build-HtmlDocument {
             continue
         }
 
+        # Operational insight badge
+        $ei = if ($Insights.ContainsKey($entity)) { $Insights[$entity] } else { $null }
+        $classification = if ($ei) { $ei.usageClassification } else { 'unknown' }
+        $classification = $classification ?? 'unknown'
+        $badgeClass = switch ($classification) {
+            'active'       { 'badge-active' }
+            'low-activity' { 'badge-low' }
+            'legacy'       { 'badge-legacy' }
+            default        { 'badge-unknown' }
+        }
+        $badgeHtml = "<span class=`"badge $badgeClass`">$classification</span>"
+        $rowCountLabel = if ($ei -and $ei.rowCount) { " &mdash; $($ei.rowCount.ToString('N0')) rows" } else { '' }
+
+        $displayName = [System.Net.WebUtility]::HtmlEncode($entity)
+        if ($ei -and $ei.displayName -and $ei.displayName -ne $entity) {
+            $displayName += " ($([System.Net.WebUtility]::HtmlEncode($ei.displayName)))"
+        }
+
         $safeEntity = [System.Net.WebUtility]::HtmlEncode($entity)
         $allRows = Import-Csv $csvFile
         if (-not $allRows) {
             $doc.AppendLine("  <details id=`"entity-$entity`">") | Out-Null
-            $doc.AppendLine("    <summary>$safeEntity</summary>") | Out-Null
+            $doc.AppendLine("    <summary>$displayName $badgeHtml$rowCountLabel</summary>") | Out-Null
             $doc.AppendLine('    <div class="table-wrap"><p><em>No data.</em></p></div>') | Out-Null
             $doc.AppendLine('  </details>') | Out-Null
         } else {
@@ -303,7 +416,7 @@ function Build-HtmlDocument {
             $unusedCount = @($unusedRows).Count
 
             $doc.AppendLine("  <details id=`"entity-$entity`">") | Out-Null
-            $doc.AppendLine("    <summary>$safeEntity &mdash; $usedCount used, $unusedCount unused</summary>") | Out-Null
+            $doc.AppendLine("    <summary>$displayName $badgeHtml$rowCountLabel &mdash; $usedCount used, $unusedCount unused</summary>") | Out-Null
             $doc.AppendLine('    <div class="table-wrap">') | Out-Null
 
             if ($usedCount -gt 0) {
@@ -328,16 +441,50 @@ function Build-HtmlDocument {
     $doc.AppendLine('  </div>') | Out-Null
 
     # ── Scripts (Mermaid + sorting) ──────────────────────────────────────────
+
+    # Inject entity classification data for diagram coloring
+    if ($Insights.Count -gt 0) {
+        $classMap = [ordered]@{}
+        foreach ($k in $Insights.Keys) {
+            $safeName = $k -replace '[^a-zA-Z0-9_]', ''
+            $safeCls  = if ($Insights[$k].usageClassification) { $Insights[$k].usageClassification } else { 'unknown' }
+            if ($safeCls -match '^(active|low-activity|legacy|empty|unknown)$') {
+                $classMap[$safeName] = $safeCls
+            }
+        }
+        $classJson = ($classMap | ConvertTo-Json -Compress) -replace '</', '<\/'
+        $doc.AppendLine("  <script>window.__entityClassifications=$classJson;</script>") | Out-Null
+    }
+
     $doc.AppendLine(@'
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default',
       securityLevel: 'strict',
       maxTextSize: 100000,
       er: { useMaxWidth: true }
     });
+    await mermaid.run({ querySelector: '.mermaid' });
+
+    // Color-code entity boxes by operational classification
+    if (window.__entityClassifications) {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const palette = {
+        active:         isDark ? '#1a3d27' : '#dafbe1',
+        'low-activity': isDark ? '#3d2e00' : '#fff8c5',
+        legacy:         isDark ? '#3d1418' : '#ffebe9'
+      };
+      document.querySelectorAll('.mermaid svg text').forEach(text => {
+        const name = text.textContent.trim().toLowerCase();
+        const cls = window.__entityClassifications[name];
+        if (!cls || !palette[cls]) return;
+        const g = text.closest('g');
+        const rect = g && g.querySelector('rect');
+        if (rect) rect.setAttribute('fill', palette[cls]);
+      });
+    }
   </script>
   <script>
     document.addEventListener('click', function(e) {
@@ -376,6 +523,17 @@ function Build-HtmlDocument {
     return $doc.ToString()
 }
 
+# ── Compute domain summaries ─────────────────────────────────────────────────
+$domainSummaries = @()
+if ($insights.Count -gt 0) {
+    $nonSummaryGroups = @('system-administration', 'all-entities')
+    foreach ($gName in $config.diagrams.PSObject.Properties.Name) {
+        if ($gName -in $nonSummaryGroups) { continue }
+        $gEntities = @($config.diagrams.$gName | Where-Object { $_ -ne '*' })
+        $domainSummaries += Get-DomainSummary $gName $gEntities $insights
+    }
+}
+
 # ── Collect diagram files ────────────────────────────────────────────────────
 $allMmdFiles = Get-ChildItem $diagramsDir -Filter '*.mmd' | Sort-Object Name
 
@@ -395,7 +553,10 @@ $primaryHtml = Build-HtmlDocument `
     -Subtitle   "Business and migration-relevant entities ($($primaryEntities.Count) entities)" `
     -EntityList $primaryEntities `
     -Diagrams   $primaryDiagrams `
-    -CrossLinkHtml 'See also: <a href="dynamics-crm-system-entities.html">System &amp; Built-in Entities</a>'
+    -CrossLinkHtml 'See also: <a href="dynamics-crm-system-entities.html">System &amp; Built-in Entities</a>' `
+    -Insights        $insights `
+    -InsightsSummary $insightsSummary `
+    -DomainSummaries $domainSummaries
 
 $primaryPath = Join-Path $outputDir 'dynamics-crm-entity-reference.html'
 $primaryHtml | Set-Content $primaryPath -Encoding UTF8
@@ -408,7 +569,9 @@ $systemHtml = Build-HtmlDocument `
     -Subtitle   "System, platform, and built-in entities ($($systemEntities.Count) entities)" `
     -EntityList $systemEntities `
     -Diagrams   $systemDiagrams `
-    -CrossLinkHtml 'See also: <a href="dynamics-crm-entity-reference.html">Business Entity Reference</a>'
+    -CrossLinkHtml 'See also: <a href="dynamics-crm-entity-reference.html">Business Entity Reference</a>' `
+    -Insights        $insights `
+    -InsightsSummary $insightsSummary
 
 $systemPath = Join-Path $outputDir 'dynamics-crm-system-entities.html'
 $systemHtml | Set-Content $systemPath -Encoding UTF8
