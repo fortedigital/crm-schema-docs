@@ -244,6 +244,48 @@ function Format-FieldTable([object[]]$rows, [System.Collections.Generic.HashSet[
     return $sb.ToString()
 }
 
+# ── Complexity table renderer ─────────────────────────────────────────────────
+function Format-ComplexityTable($rows) {
+    $sb = [System.Text.StringBuilder]::new()
+    $sb.AppendLine('<table class="sortable">') | Out-Null
+    $sb.AppendLine('  <thead><tr>') | Out-Null
+    foreach ($h in @('Entity','Fields','Required','Calculated','Lookups','OptionSets','Custom','Custom%','Score','DataRows','Recommend')) {
+        $sb.AppendLine("    <th data-sort-col>$h <span class=`"sort-arrow`"></span></th>") | Out-Null
+    }
+    $sb.AppendLine('  </tr></thead>') | Out-Null
+    $sb.AppendLine('  <tbody>') | Out-Null
+    foreach ($row in $rows) {
+        $safeEntity = [System.Net.WebUtility]::HtmlEncode($row.Entity)
+        $entityCell = "<a href=`"#entity-$safeEntity`">$safeEntity</a>"
+        $recClass   = switch ($row.Recommendation) {
+            'Migrate' { 'rec-migrate' }
+            'Verify'  { 'rec-verify' }
+            'Archive' { 'rec-archive' }
+            default   { 'rec-assess' }
+        }
+        $recCell   = "<span class=`"$recClass`">$([System.Net.WebUtility]::HtmlEncode($row.Recommendation))</span>"
+        $drDisplay = if ($row.DataRowsCapped) {
+            "<span title=`"Row count may be capped at API page size; actual count could be higher`">$($row.DataRows.ToString('N0'))&thinsp;&ge;</span>"
+        } else { $row.DataRows.ToString('N0') }
+        $sb.AppendLine("  <tr>") | Out-Null
+        $sb.AppendLine("    <td>$entityCell</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.Fields)`">$($row.Fields)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.Required)`">$($row.Required)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.Calculated)`">$($row.Calculated)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.Lookups)`">$($row.Lookups)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.OptionSets)`">$($row.OptionSets)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.Custom)`">$($row.Custom)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.CustomPct)`">$($row.CustomPct)%</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.Score)`">$($row.Score)</td>") | Out-Null
+        $sb.AppendLine("    <td data-sort-value=`"$($row.DataRows)`">$drDisplay</td>") | Out-Null
+        $sb.AppendLine("    <td>$recCell</td>") | Out-Null
+        $sb.AppendLine("  </tr>") | Out-Null
+    }
+    $sb.AppendLine('  </tbody>') | Out-Null
+    $sb.AppendLine('</table>') | Out-Null
+    return $sb.ToString()
+}
+
 # ── HTML document generator ──────────────────────────────────────────────────
 function Build-HtmlDocument {
     param(
@@ -254,7 +296,9 @@ function Build-HtmlDocument {
         [string]$CrossLinkHtml,
         [hashtable]$Insights = @{},
         [PSCustomObject]$InsightsSummary = $null,
-        [PSCustomObject[]]$DomainSummaries = @()
+        [PSCustomObject[]]$DomainSummaries = @(),
+        [string]$ExecutiveSummaryHtml = '',
+        [string]$DisclaimerHtml = ''
     )
 
     $doc = [System.Text.StringBuilder]::new()
@@ -444,6 +488,31 @@ function Build-HtmlDocument {
     .legend-item > span:first-child { flex-shrink: 0; }
     /* Entity group headings */
     .entity-group-heading { margin: 2rem 0 .5rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); font-size: 1em; color: #656d76; }
+    /* Executive summary callout */
+    .callout { border: 1px solid #0969da; border-left: 4px solid #0969da; border-radius: 6px; background: #f0f6ff; padding: 1rem 1.5rem; margin: 1.5rem 0; }
+    .callout-title { margin: 0 0 .6rem; font-size: 1em; }
+    .callout-list { margin: .4rem 0; padding-left: 1.5rem; }
+    .callout-list li { margin: .3rem 0; }
+    .callout-note { margin: .8rem 0 0; font-size: 0.85em; color: #656d76; }
+    @media (prefers-color-scheme: dark) {
+      .callout { border-color: #58a6ff; background: #0d2045; }
+    }
+    /* Disclaimer banner */
+    .disclaimer { border: 1px solid #d29922; background: #fff8c5; border-radius: 6px; padding: .8rem 1.2rem; margin: 1rem 0; font-size: 0.9em; }
+    @media (prefers-color-scheme: dark) {
+      .disclaimer { background: #3d2e00; border-color: #e3b341; color: var(--fg); }
+    }
+    /* Recommendation badges */
+    .rec-migrate { display: inline-block; font-size: 0.75em; padding: 1px 7px; border-radius: 4px; background: #dafbe1; color: #1a7f37; font-weight: 600; }
+    .rec-verify  { display: inline-block; font-size: 0.75em; padding: 1px 7px; border-radius: 4px; background: #fff8c5; color: #9a6700; font-weight: 600; }
+    .rec-archive { display: inline-block; font-size: 0.75em; padding: 1px 7px; border-radius: 4px; background: #ffebe9; color: #cf222e; font-weight: 600; }
+    .rec-assess  { display: inline-block; font-size: 0.75em; padding: 1px 7px; border-radius: 4px; background: #eaeef2; color: #656d76; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      .rec-migrate { background: #1a3d27; color: #7ee787; }
+      .rec-verify  { background: #3d2e00; color: #e3b341; }
+      .rec-archive { background: #3d1418; color: #f85149; }
+      .rec-assess  { background: #21262d; color: #8b949e; }
+    }
   </style>
 </head>
 <body>
@@ -457,6 +526,12 @@ function Build-HtmlDocument {
     }
     if ($CrossLinkHtml) {
         $doc.AppendLine("  <div class=`"cross-link`">$CrossLinkHtml</div>") | Out-Null
+    }
+    if ($DisclaimerHtml) {
+        $doc.AppendLine("  $DisclaimerHtml") | Out-Null
+    }
+    if ($ExecutiveSummaryHtml) {
+        $doc.AppendLine($ExecutiveSummaryHtml) | Out-Null
     }
 
     # ── Legend ───────────────────────────────────────────────────────────
@@ -496,7 +571,7 @@ function Build-HtmlDocument {
       <div class="legend-section">
         <h4>View Usage</h4>
         <p>Number of saved system views that display this field as a visible column. A higher count is a proxy for business importance. <strong>Zero does not mean unused</strong> &mdash; fields may appear in forms, flow in workflows, or be consumed by integrations without ever appearing in a view.</p>
-        <p>Fields are split into <em>Active</em> (used in at least one view) and <em>Unused</em> (view usage = 0) to help prioritise mapping effort.</p>
+        <p>Fields are split into <em>Active</em> (used in at least one view) and <em>Fields Not Used in Any View</em> (view usage = 0) to help prioritise mapping effort. Zero view usage does not mean a field is empty &mdash; verify before excluding from migration scope.</p>
       </div>
 
       <div class="legend-section">
@@ -616,25 +691,34 @@ function Build-HtmlDocument {
         if (-not (Test-Path $csvFile)) { continue }
         $allRowsCx = @(Import-Csv $csvFile)
         if (-not $allRowsCx -or $allRowsCx.Count -eq 0) { continue }
-        $cx = Get-EntityComplexity $allRowsCx
-        $eiCx = if ($Insights.ContainsKey($entity)) { $Insights[$entity] } else { $null }
+        $cx    = Get-EntityComplexity $allRowsCx
+        $eiCx  = if ($Insights.ContainsKey($entity)) { $Insights[$entity] } else { $null }
+        $cls   = if ($eiCx) { $eiCx.usageClassification ?? 'unknown' } else { 'unknown' }
+        $drRaw = if ($eiCx -and $eiCx.rowCount) { [long]$eiCx.rowCount } else { 0 }
         $complexityRows.Add([PSCustomObject]@{
-            Entity     = $entity
-            Fields     = $cx.Total
-            Required   = $cx.Required
-            Calculated = $cx.Calculated
-            Lookups    = $cx.Lookups
-            OptionSets = $cx.OptionSets
-            Custom     = $cx.Custom
-            Score      = $cx.Score
-            DataRows   = if ($eiCx -and $eiCx.rowCount) { [long]$eiCx.rowCount } else { 0 }
+            Entity         = $entity
+            Fields         = $cx.Total
+            Required       = $cx.Required
+            Calculated     = $cx.Calculated
+            Lookups        = $cx.Lookups
+            OptionSets     = $cx.OptionSets
+            Custom         = $cx.Custom
+            CustomPct      = [int]([Math]::Round($cx.Custom * 100.0 / [Math]::Max($cx.Total, 1)))
+            Score          = $cx.Score
+            DataRows       = $drRaw
+            DataRowsCapped = ($drRaw -eq 5000)
+            Recommendation = switch ($cls) {
+                'active'       { 'Migrate' }
+                'low-activity' { 'Verify'  }
+                'legacy'       { 'Archive' }
+                default        { 'Assess'  }
+            }
         })
     }
     if ($complexityRows.Count -gt 0) {
         $doc.AppendLine('  <h3 id="migration-complexity">Migration Complexity Summary</h3>') | Out-Null
-        $doc.AppendLine('  <p style="font-size:0.9em;color:#656d76;">Score&nbsp;=&nbsp;Required&nbsp;+&nbsp;(Calculated&nbsp;&times;&nbsp;2)&nbsp;+&nbsp;Lookups&nbsp;+&nbsp;OptionSets&nbsp;+&nbsp;Custom. Sort by Score to prioritise migration effort.</p>') | Out-Null
-        $cxHeaders = @('Entity','Fields','Required','Calculated','Lookups','OptionSets','Custom','Score','DataRows')
-        $doc.AppendLine((ConvertTo-SortableTable $complexityRows $cxHeaders)) | Out-Null
+        $doc.AppendLine('  <p style="font-size:0.9em;color:#656d76;">Score&nbsp;=&nbsp;Required&nbsp;+&nbsp;(Calculated&nbsp;&times;&thinsp;2)&nbsp;+&nbsp;Lookups&nbsp;+&nbsp;OptionSets&nbsp;+&nbsp;Custom. Custom% is the share of org-specific fields. Recommend is derived from entity activity status. Row counts marked &ge; may be capped at the API query page size &mdash; actual volume could be higher. Sort by Score to prioritise migration effort.</p>') | Out-Null
+        $doc.AppendLine((Format-ComplexityTable $complexityRows)) | Out-Null
     }
 
     $doc.AppendLine('  <div class="entity-section">') | Out-Null
@@ -727,7 +811,8 @@ function Build-HtmlDocument {
 
             if ($unusedCount -gt 0) {
                 $doc.AppendLine('    <details class="unused-section">') | Out-Null
-                $doc.AppendLine("      <summary>Unused Fields ($unusedCount)</summary>") | Out-Null
+                $doc.AppendLine("      <summary>Fields Not Used in Any View ($unusedCount)</summary>") | Out-Null
+                $doc.AppendLine('      <p style="font-size:0.82em;color:#656d76;margin:.4rem .5rem .6rem;">View usage = 0 does not mean these fields are empty or irrelevant &mdash; they may be populated, used in forms, referenced by plugins or workflows, or consumed by integrations. Verify before excluding from migration scope.</p>') | Out-Null
                 $doc.AppendLine((Format-FieldTable $unusedRows $knownEntitySet)) | Out-Null
                 $doc.AppendLine('    </details>') | Out-Null
             }
@@ -847,32 +932,78 @@ $systemDiagrams = @($allMmdFiles | Where-Object {
     $n -eq 'system-administration' -or $n -eq 'all-entities'
 })
 
+# ── Pre-compute executive summary stats ──────────────────────────────────────
+$totalPlugins    = ($domainSummaries | Measure-Object -Property PluginSteps -Sum).Sum ?? 0
+$totalWorkflows  = ($domainSummaries | Measure-Object -Property Workflows   -Sum).Sum ?? 0
+$totalAutomation = [int]$totalPlugins + [int]$totalWorkflows
+
+$execActiveCount = @($primaryEntities | Where-Object { ($insights[$_]?.usageClassification ?? 'unknown') -eq 'active'       }).Count
+$execLowCount    = @($primaryEntities | Where-Object { ($insights[$_]?.usageClassification ?? 'unknown') -eq 'low-activity'  }).Count
+$execLegacyCount = @($primaryEntities | Where-Object { ($insights[$_]?.usageClassification ?? 'unknown') -eq 'legacy'        }).Count
+
+$execCxRows = foreach ($entity in $primaryEntities) {
+    $csvPath = Join-Path $entitiesDir "$entity.csv"
+    if (-not (Test-Path $csvPath)) { continue }
+    $allRowsEx = @(Import-Csv $csvPath)
+    if (-not $allRowsEx -or $allRowsEx.Count -eq 0) { continue }
+    $cxEx = Get-EntityComplexity $allRowsEx
+    [PSCustomObject]@{ Entity = $entity; Score = $cxEx.Score; Custom = $cxEx.Custom; Total = $cxEx.Total }
+}
+$totalCustomFields = ($execCxRows | Measure-Object -Property Custom -Sum).Sum ?? 0
+$totalAllFields    = ($execCxRows | Measure-Object -Property Total  -Sum).Sum ?? 0
+$customPct         = [int]([Math]::Round($totalCustomFields * 100.0 / [Math]::Max($totalAllFields, 1)))
+$topByScore        = @($execCxRows | Sort-Object Score -Descending | Select-Object -First 5)
+$topItemsHtml      = ($topByScore | ForEach-Object {
+    "        <li><strong>$([System.Net.WebUtility]::HtmlEncode($_.Entity))</strong> &mdash; score $($_.Score), $($_.Custom) custom fields</li>"
+}) -join "`n"
+
+$execSummaryHtml = @"
+  <div class="callout">
+    <h3 class="callout-title">At a Glance &mdash; Migration Snapshot</h3>
+    <ul class="callout-list">
+      <li><strong>$($primaryEntities.Count) business entities</strong> in scope across $($domainSummaries.Count) domains &mdash; $execActiveCount active, $execLowCount low-activity, $execLegacyCount legacy</li>
+      <li><strong>$totalCustomFields custom fields</strong> out of $totalAllFields total ($customPct%) &mdash; org-specific logic with no built-in equivalent in any target system</li>
+      <li><strong>$totalAutomation automation steps</strong> to re-implement ($totalPlugins plugin steps + $totalWorkflows workflows across all business domains)</li>
+      <li>Highest-complexity entities by migration score:
+        <ol>
+$topItemsHtml
+        </ol>
+      </li>
+    </ul>
+    <p class="callout-note">See <a href="dynamics-crm-migration-notes.html">Migration Assessment Notes</a> for qualitative context, integration scope, recommended scope decisions, and open questions for the vendor.</p>
+  </div>
+"@
+
 # ── Generate primary document (business / migration entities) ────────────────
 Write-Host "`nGenerating primary entity reference..." -ForegroundColor Cyan
 $primaryHtml = Build-HtmlDocument `
-    -Title      'Dynamics 365 CRM — Entity Reference' `
-    -Subtitle   "Business and migration-relevant entities ($($primaryEntities.Count) entities)" `
-    -EntityList $primaryEntities `
-    -Diagrams   $primaryDiagrams `
-    -CrossLinkHtml 'See also: <a href="dynamics-crm-system-entities.html">System &amp; Built-in Entities</a>' `
-    -Insights        $insights `
-    -InsightsSummary $insightsSummary `
-    -DomainSummaries $domainSummaries
+    -Title                'Dynamics 365 CRM — Entity Reference' `
+    -Subtitle             "Business and migration-relevant entities ($($primaryEntities.Count) entities)" `
+    -EntityList           $primaryEntities `
+    -Diagrams             $primaryDiagrams `
+    -CrossLinkHtml        'See also: <a href="dynamics-crm-system-entities.html">System &amp; Built-in Entities</a>' `
+    -Insights             $insights `
+    -InsightsSummary      $insightsSummary `
+    -DomainSummaries      $domainSummaries `
+    -ExecutiveSummaryHtml $execSummaryHtml
 
 $primaryPath = Join-Path $outputDir 'dynamics-crm-entity-reference.html'
 $primaryHtml | Set-Content $primaryPath -Encoding UTF8
 Write-Host "Saved → $primaryPath" -ForegroundColor Green
 
 # ── Generate system entities document ────────────────────────────────────────
+$systemDisclaimerHtml = '<div class="disclaimer"><strong>Scope note:</strong> This document lists Dynamics 365 platform and built-in system entities for reference completeness. These are <strong>not migration candidates</strong> &mdash; they are automatically provided by any Dynamics 365 environment or equivalent CRM platform and do not carry business-critical custom data. Use the <a href="dynamics-crm-entity-reference.html">Business Entity Reference</a> for migration scoping and effort estimation.</div>'
+
 Write-Host "`nGenerating system entities reference..." -ForegroundColor Cyan
 $systemHtml = Build-HtmlDocument `
-    -Title      'Dynamics 365 CRM — System & Built-in Entities' `
-    -Subtitle   "System, platform, and built-in entities ($($systemEntities.Count) entities)" `
-    -EntityList $systemEntities `
-    -Diagrams   $systemDiagrams `
-    -CrossLinkHtml 'See also: <a href="dynamics-crm-entity-reference.html">Business Entity Reference</a>' `
+    -Title           'Dynamics 365 CRM — System & Built-in Entities' `
+    -Subtitle        "System, platform, and built-in entities ($($systemEntities.Count) entities)" `
+    -EntityList      $systemEntities `
+    -Diagrams        $systemDiagrams `
+    -CrossLinkHtml   'See also: <a href="dynamics-crm-entity-reference.html">Business Entity Reference</a>' `
     -Insights        $insights `
-    -InsightsSummary $insightsSummary
+    -InsightsSummary $insightsSummary `
+    -DisclaimerHtml  $systemDisclaimerHtml
 
 $systemPath = Join-Path $outputDir 'dynamics-crm-system-entities.html'
 $systemHtml | Set-Content $systemPath -Encoding UTF8
