@@ -429,6 +429,19 @@ function Build-HtmlDocument {
       .cx-opts { background: #431407; color: #fdba74; border-color: #9a3412; }
       .cx-cust { background: #2e1065; color: #c4b5fd; border-color: #5b21b6; }
     }
+
+    /* Legend */
+    .legend { border: 1px solid var(--border); border-radius: 6px; margin: 1.5rem 0; }
+    .legend > summary { cursor: pointer; padding: .6rem 1rem; font-weight: 600; background: var(--section-bg); border-radius: 6px; list-style: none; display: flex; align-items: center; gap: .5rem; }
+    .legend > summary::before { content: '\25B6'; font-size: .7em; opacity: .6; transition: transform .15s; }
+    .legend[open] > summary::before { transform: rotate(90deg); }
+    .legend[open] > summary { border-bottom: 1px solid var(--border); border-radius: 6px 6px 0 0; }
+    .legend-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; padding: 1.2rem 1.5rem; }
+    .legend-section h4 { margin: 0 0 .6rem; font-size: 0.8em; text-transform: uppercase; letter-spacing: .06em; color: #656d76; border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
+    .legend-section p { margin: .3rem 0; font-size: 0.85em; line-height: 1.5; }
+    .legend-section p strong { font-family: monospace; }
+    .legend-item { display: flex; align-items: baseline; gap: .5rem; margin: .35rem 0; font-size: 0.85em; }
+    .legend-item > span:first-child { flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -443,6 +456,57 @@ function Build-HtmlDocument {
     if ($CrossLinkHtml) {
         $doc.AppendLine("  <div class=`"cross-link`">$CrossLinkHtml</div>") | Out-Null
     }
+
+    # ── Legend ───────────────────────────────────────────────────────────
+    $doc.AppendLine(@'
+  <details class="legend">
+    <summary>How to read this document</summary>
+    <div class="legend-body">
+
+      <div class="legend-section">
+        <h4>Field Type</h4>
+        <div class="legend-item"><span class="type-chip type-string">string</span> Free text</div>
+        <div class="legend-item"><span class="type-chip type-guid">guid</span> Unique identifier or foreign key. Lookup fields point to another entity.</div>
+        <div class="legend-item"><span class="type-chip type-int">int</span> Whole number</div>
+        <div class="legend-item"><span class="type-chip type-decimal">decimal</span> Decimal or currency amount</div>
+        <div class="legend-item"><span class="type-chip type-bool">bool</span> Yes / No toggle</div>
+        <div class="legend-item"><span class="type-chip type-datetime">datetime</span> Date and/or time</div>
+        <div class="legend-item"><span class="type-chip type-picklist">picklist</span> Single-select or multi-select option list. Expand the &ldquo;Option Values&rdquo; cell to see all choices.</div>
+      </div>
+
+      <div class="legend-section">
+        <h4>Field Flags</h4>
+        <div class="legend-item"><span class="req-badge">required</span> Field must have a value (system or application enforced). Target system must provide equivalent validation.</div>
+        <div class="legend-item"><span class="src-badge src-calculated">calc</span> Value is computed by a formula. No raw data exists &mdash; the logic must be rebuilt in the target system.</div>
+        <div class="legend-item"><span class="src-badge src-rollup">rollup</span> Value is aggregated from child records. Must be recreated as rollup or aggregate logic in the target system.</div>
+        <div class="legend-item"><span class="custom-badge">custom</span> Field added outside the standard D365 schema. Org-specific; has no built-in equivalent in any target system.</div>
+      </div>
+
+      <div class="legend-section">
+        <h4>Entity Status</h4>
+        <div class="legend-item"><span class="badge badge-active">active</span> Records exist and are regularly created or modified &mdash; high migration priority.</div>
+        <div class="legend-item"><span class="badge badge-low">low-activity</span> Records exist but are rarely touched &mdash; verify whether data is still needed.</div>
+        <div class="legend-item"><span class="badge badge-legacy">legacy</span> Data present but no recent activity &mdash; candidate for archival rather than full migration.</div>
+        <div class="legend-item"><span class="badge badge-unknown">unknown</span> No operational insight data available.</div>
+        <p>The row count shown next to the entity name is the current record count in Dynamics 365.</p>
+      </div>
+
+      <div class="legend-section">
+        <h4>View Usage</h4>
+        <p>Number of saved system views that display this field as a visible column. A higher count is a proxy for business importance. <strong>Zero does not mean unused</strong> &mdash; fields may appear in forms, flow in workflows, or be consumed by integrations without ever appearing in a view.</p>
+        <p>Fields are split into <em>Active</em> (used in at least one view) and <em>Unused</em> (view usage = 0) to help prioritise mapping effort.</p>
+      </div>
+
+      <div class="legend-section">
+        <h4>Migration Complexity Score</h4>
+        <p><strong>Score = Required + (Calculated &times; 2) + Lookups + OptionSets + Custom</strong></p>
+        <p>A relative indicator of migration effort per entity. Calculated and rollup fields are weighted &times;&thinsp;2 because they require logic to be rebuilt rather than data to be copied. Sort the complexity table by Score to prioritise which entities need the most design work in the migration mapping phase.</p>
+        <p>The coloured pills inside each entity (e.g. <em>3 required</em>, <em>5 lookups</em>) are a quick visual breakdown of that score.</p>
+      </div>
+
+    </div>
+  </details>
+'@) | Out-Null
 
     # ── Operational Overview ─────────────────────────────────────────────
     if ($InsightsSummary) {
