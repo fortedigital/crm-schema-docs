@@ -11,8 +11,9 @@ Generates ER diagrams, property CSVs, and HTML reference documents for a HubSpot
 ## Quick start
 
 ```powershell
-# 1. Add your Private App token to config.json
-#    scripts/gather/config.json → environment.privateAppToken
+# 1. Copy the example config and add your Private App token
+#    cp scripts/gather/config.example.json scripts/gather/config.json
+#    Then set: environment.privateAppToken and environment.portalId
 
 # 2. Run the full pipeline
 cd hubspot/scripts
@@ -32,6 +33,12 @@ cd hubspot/scripts
 | Generate | `generate/run-generate.ps1`| `data/clean/`      | `output/diagrams/`, `output/objects/`, `output/*.html`, `output/*.md` |
 
 ## Configuration
+
+Copy the example config and fill in your portal details:
+
+```powershell
+cp scripts/gather/config.example.json scripts/gather/config.json
+```
 
 `scripts/gather/config.json`:
 
