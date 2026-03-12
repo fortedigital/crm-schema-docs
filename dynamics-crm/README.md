@@ -93,6 +93,18 @@ output/                                ← gitignored
 
 `mmdc` (Mermaid CLI) is required for the generate stage: `npm install -g @mermaid-js/mermaid-cli`
 
+### Configuration
+
+Copy the example config and fill in your environment details:
+
+```powershell
+cp scripts/gather/config.example.json scripts/gather/config.json
+```
+
+Then edit `scripts/gather/config.json` with your Dataverse URL, tenant ID, and client ID.
+
+> **Note:** `scripts/gather/config.json` is gitignored to prevent accidental credential leaks. Always use `config.example.json` as the template.
+
 ### Auth modes
 
 | Mode | How |
