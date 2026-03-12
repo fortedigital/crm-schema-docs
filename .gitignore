@@ -1,7 +1,9 @@
 # Data extracted/transformed from CRM environments — never commit
 dynamics-crm/data/
 salesforce/data/
+hubspot/data/
 
 # Generated output
 dynamics-crm/output/
 salesforce/output/
+hubspot/output/
