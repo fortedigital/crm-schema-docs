@@ -1,0 +1,35 @@
+name: Purge Git History
+
+# WARNING: This workflow is destructive and irreversible.
+# It replaces the entire git history of the main branch with a single commit,
+# permanently deleting all previous commits, tags, and history.
+# Any existing local clones or open PRs will be broken after this runs.
+# Requires the input confirmation to be set to "yes" to proceed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm you want to permanently purge all git history'
+        required: true
+        default: 'no'
+
+jobs:
+  purge-history:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ github.event.inputs.confirm == 'yes' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Squash history to a single commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan temp-branch
+          git add -A
+          git commit -m "Initial commit"
+          git branch -M temp-branch main
+          git push --force origin main
