@@ -1,0 +1,23 @@
+{
+  "environment": {
+    "portalId": "",
+    "privateAppToken": "",
+    "authMode": "PrivateApp"
+  },
+  "objectSource": {
+    "mode": "all",
+    "includeStandard": true,
+    "filter": []
+  },
+  "diagrams": {
+    "core-objects":  ["contacts", "companies", "deals"],
+    "sales-process": ["deals", "line_items", "products", "quotes"],
+    "service":       ["contacts", "companies", "tickets"]
+  },
+  "output": {
+    "rawDir":      "../../data/raw",
+    "cleanDir":    "../../data/clean",
+    "diagramsDir": "../../output/diagrams",
+    "objectsDir":  "../../output/objects"
+  }
+}

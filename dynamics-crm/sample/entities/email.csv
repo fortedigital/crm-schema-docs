@@ -1,0 +1,8 @@
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+activityid,Activity ID,guid,yes,no,6,,
+subject,Subject,string,no,no,6,,
+description,Body,string,no,no,4,,
+trackingtoken,Tracking Token,string,no,no,2,,
+senton,Sent On,datetime,no,no,5,,
+directioncode,Direction,bool,no,no,4,,
+statecode,Status,picklist,yes,no,6,,

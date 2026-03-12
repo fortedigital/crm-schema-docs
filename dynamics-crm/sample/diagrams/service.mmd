@@ -1,0 +1,10 @@
+---
+title: Dynamics 365 — Service
+---
+erDiagram
+
+    Account ||--o{ Incident : "cases"
+    Contact ||--o{ Incident : "cases"
+    Subject ||--o{ Subject : "child subjects"
+    Subject ||--o{ KnowledgeArticle : "articles"
+    Subject ||--o{ Incident : "subject"

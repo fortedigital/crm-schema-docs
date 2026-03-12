@@ -1,0 +1,24 @@
+{
+  "environment": {
+    "orgAlias": "<your-org-alias>",
+    "apiVersion": "62.0",
+    "authMode": "Interactive"
+  },
+  "objectSource": {
+    "mode": "custom",
+    "namespace": "",
+    "filter": ""
+  },
+  "diagrams": {
+    "core-objects":  ["Account", "Contact", "Lead", "Opportunity"],
+    "sales-process": ["Opportunity", "Quote", "QuoteLineItem", "Order", "OrderItem", "Product2", "Pricebook2", "PricebookEntry"],
+    "activities":    ["Account", "Contact", "Task", "Event"],
+    "service":       ["Account", "Contact", "Case", "Solution"]
+  },
+  "output": {
+    "rawDir":      "../../data/raw",
+    "cleanDir":    "../../data/clean",
+    "diagramsDir": "../../output/diagrams",
+    "objectsDir":  "../../output/objects"
+  }
+}

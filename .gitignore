@@ -1,0 +1,16 @@
+# Data extracted/transformed from CRM environments — never commit
+dynamics-crm/data/
+salesforce/data/
+hubspot/data/
+
+# Generated output
+dynamics-crm/output/
+salesforce/output/
+
+# IDE settings — may contain personal paths or project-specific configuration
+.vscode/
+
+# Local config files — copy config.json from config.example.json and fill in your values
+dynamics-crm/scripts/gather/config.json
+salesforce/scripts/gather/config.json
+hubspot/scripts/gather/config.json

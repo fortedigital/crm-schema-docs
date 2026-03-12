@@ -1,0 +1,15 @@
+---
+title: Salesforce — Activities
+---
+erDiagram
+
+    Account ||--o{ Task : "tasks"
+    Account ||--o{ Event : "events"
+    Contact ||--o{ Task : "tasks (who)"
+    Contact ||--o{ Event : "events (who)"
+    Lead ||--o{ Task : "tasks (who)"
+    Lead ||--o{ Event : "events (who)"
+    Opportunity ||--o{ Task : "tasks (what)"
+    Opportunity ||--o{ Event : "events (what)"
+    Case ||--o{ Task : "tasks (what)"
+    Case ||--o{ EmailMessage : "emails"

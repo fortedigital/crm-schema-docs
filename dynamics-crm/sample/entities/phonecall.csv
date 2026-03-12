@@ -1,0 +1,8 @@
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+activityid,Activity ID,guid,yes,no,5,,
+subject,Subject,string,yes,no,5,,
+description,Description,string,no,no,3,,
+phonenumber,Phone Number,string,no,no,4,,
+directioncode,Direction,bool,no,no,3,,
+scheduledend,Due,datetime,no,no,4,,
+statecode,Status,picklist,yes,no,5,,

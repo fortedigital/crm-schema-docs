@@ -1,0 +1,8 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Pricebook Entry ID,id,yes,no,4,,
+Pricebook2Id,Price Book,reference,yes,no,4,,
+Product2Id,Product,reference,yes,no,4,,
+UnitPrice,List Price,currency,yes,no,4,,
+IsActive,Active,boolean,yes,no,4,,
+UseStandardPrice,Use Standard Price,boolean,no,no,3,,
+CurrencyIsoCode,Currency,string,no,no,3,,

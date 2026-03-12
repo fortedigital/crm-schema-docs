@@ -1,0 +1,7 @@
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+activityid,Activity ID,guid,yes,no,7,,
+subject,Subject,string,yes,no,7,,
+description,Description,string,no,no,4,,
+percentcomplete,Percent Complete,int,no,no,3,,
+scheduledend,Due,datetime,no,no,6,,
+statecode,Status,picklist,yes,no,7,,

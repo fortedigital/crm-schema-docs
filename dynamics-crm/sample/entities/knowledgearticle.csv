@@ -1,0 +1,12 @@
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+knowledgearticleid,Article ID,guid,yes,no,5,,
+title,Title,string,yes,no,5,,
+keywords,Keywords,string,no,no,3,,
+content,Content,string,no,no,4,,
+languagelocaleid,Language,int,yes,no,4,,
+articlepublicnumber,Article Number,string,no,no,4,,
+isprimary,Primary Translation,bool,no,no,2,,
+isinternal,Internal Only,bool,no,no,3,,
+subjectid,Subject,guid,no,no,3,,
+statecode,Status,picklist,yes,no,5,,
+statuscode,Status Reason,picklist,yes,no,5,,

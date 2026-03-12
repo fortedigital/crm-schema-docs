@@ -1,0 +1,12 @@
+---
+title: Salesforce — Sales Process
+---
+erDiagram
+
+    Opportunity ||--|{ OpportunityLineItem : "line items"
+    Pricebook2 ||--|{ PricebookEntry : "entries"
+    Product2 ||--|{ PricebookEntry : "pricebook entries"
+    PricebookEntry ||--|{ OpportunityLineItem : "line items"
+    Opportunity ||--o{ Quote : "quotes"
+    Quote ||--|{ QuoteLineItem : "line items"
+    PricebookEntry ||--|{ QuoteLineItem : "line items"

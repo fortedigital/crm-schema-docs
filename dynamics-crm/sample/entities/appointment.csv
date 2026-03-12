@@ -1,0 +1,9 @@
+logical_name,display_name,type,required,is_custom,usage,bu_usage,comment
+activityid,Activity ID,guid,yes,no,6,,
+subject,Subject,string,yes,no,6,,
+description,Description,string,no,no,3,,
+location,Location,string,no,no,4,,
+scheduledstart,Start,datetime,yes,no,6,,
+scheduledend,End,datetime,yes,no,6,,
+isalldayevent,All Day Event,bool,no,no,3,,
+statecode,Status,picklist,yes,no,6,,

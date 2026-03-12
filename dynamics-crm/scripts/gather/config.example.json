@@ -1,0 +1,27 @@
+{
+  "environment": {
+    "url": "https://<your-org>.crm.dynamics.com",
+    "tenantId": "<your-tenant-id>",
+    "authMode": "Interactive",
+    "clientId": "<your-client-id>",
+    "loginHint": "<your-login-hint>"
+  },
+  "entitySource": {
+    "mode": "all",
+    "solution": "",
+    "filter": ""
+  },
+  "diagrams": {
+    "core-entities":   ["account", "contact", "lead", "opportunity", "competitor", "incident"],
+    "sales-process":   ["account", "contact", "lead", "opportunity"],
+    "activities":      ["account", "contact", "activitypointer", "appointment", "email", "phonecall", "task"],
+    "service":         ["account", "contact", "incident"],
+    "all-entities":    ["*"]
+  },
+  "output": {
+    "rawDir":      "../../data/raw",
+    "cleanDir":    "../../data/clean",
+    "diagramsDir": "../../output/diagrams",
+    "entitiesDir": "../../output/entities"
+  }
+}

@@ -1,0 +1,6 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Price Book ID,id,yes,no,4,,
+Name,Price Book Name,string,yes,no,4,,
+Description,Description,textarea,no,no,2,,
+IsActive,Active,boolean,yes,no,4,,
+IsStandard,Is Standard Price Book,boolean,no,no,3,,

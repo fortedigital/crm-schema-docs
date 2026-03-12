@@ -1,0 +1,14 @@
+---
+title: Dynamics 365 — Sales Process
+---
+erDiagram
+
+    Opportunity ||--o{ Quote : "quotes"
+    Quote ||--o{ SalesOrder : "orders"
+    Quote ||--o{ QuoteDetail : "lines"
+    SalesOrder ||--o{ SalesOrderDetail : "lines"
+    SalesOrder ||--o{ Invoice : "invoices"
+    Invoice ||--o{ InvoiceDetail : "lines"
+    Product ||--o{ QuoteDetail : "product"
+    Product ||--o{ SalesOrderDetail : "product"
+    Product ||--o{ InvoiceDetail : "product"

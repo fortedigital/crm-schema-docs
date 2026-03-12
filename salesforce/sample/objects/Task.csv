@@ -1,0 +1,10 @@
+api_name,label,type,required,is_custom,usage,bu_usage,comment
+Id,Task ID,id,yes,no,7,,
+Subject,Subject,string,no,no,7,,
+WhoId,Name (Who),reference,no,no,6,,
+WhatId,Related To (What),reference,no,no,6,,
+ActivityDate,Due Date,date,no,no,7,,
+Status,Status,picklist,yes,no,7,,
+Priority,Priority,picklist,yes,no,7,,
+Description,Comments,textarea,no,no,4,,
+OwnerId,Owner,reference,yes,no,7,,
