@@ -1,6 +1,6 @@
 {
   "environment": {
-    "orgAlias": "oras-sf",
+    "orgAlias": "<your-org-alias>",
     "apiVersion": "62.0",
     "authMode": "Interactive"
   },

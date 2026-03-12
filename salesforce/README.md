@@ -69,12 +69,18 @@ In addition to the above user permissions, JWT auth requires a Connected App con
 | `Interactive` | Browser login via `sf org login web` — one-time per session |
 | `JWT` | Non-interactive via `sf org login jwt` — requires Connected App + private key |
 
+Copy the example config and fill in your environment details:
+
+```powershell
+cp scripts/gather/config.example.json scripts/gather/config.json
+```
+
 Configure in `scripts/gather/config.json`:
 
 ```json
 {
   "environment": {
-    "orgAlias": "oras-sf",
+    "orgAlias": "<your-org-alias>",
     "apiVersion": "62.0",
     "authMode": "Interactive"
   }
